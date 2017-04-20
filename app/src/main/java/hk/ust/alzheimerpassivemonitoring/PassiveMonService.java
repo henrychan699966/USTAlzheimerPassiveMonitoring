@@ -35,7 +35,7 @@ public class PassiveMonService extends Service {
                 .setContentText("In Progress")
                 .setSmallIcon(R.drawable.notification_icon)
                 .build();
-
+        //an arbitrary id
         ONGOING_NOTIFICATION_ID = (int)System.currentTimeMillis();
 
         super.onCreate();
