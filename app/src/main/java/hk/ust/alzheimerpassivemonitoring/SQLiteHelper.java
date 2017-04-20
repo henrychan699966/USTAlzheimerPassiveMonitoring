@@ -1,5 +1,6 @@
 package hk.ust.alzheimerpassivemonitoring;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -9,6 +10,9 @@ import android.database.sqlite.SQLiteOpenHelper;
  */
 
 public class SQLiteHelper extends SQLiteOpenHelper{
+
+    private static final String databaseName = "PassiveMonitoringRecord";
+    private static final int version = 1;
 
     private static final String CREATE_TABLE_StepDistance =
             "CREATE TABLE StepDistance (Date CHARACTER(8) PRIMARY KEY, Step INTEGER, Distance REAL);";
@@ -24,8 +28,8 @@ public class SQLiteHelper extends SQLiteOpenHelper{
     private static final String DROP_TABLE_PhoneUsage = "DROP TABLE PhoneUsage;";
     private static final String DROP_TABLE_SleepWakeCycle = "DROP TABLE SleepWakeCycle;";
 
-    public SQLiteHelper(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
-        super(context, name, factory, version);
+    public SQLiteHelper(Context context) {
+        super(context, databaseName, null, version);
     }
 
     @Override
@@ -43,5 +47,16 @@ public class SQLiteHelper extends SQLiteOpenHelper{
         sqLiteDatabase.execSQL(DROP_TABLE_PhoneUsage);
         sqLiteDatabase.execSQL(DROP_TABLE_SleepWakeCycle);
         onCreate(sqLiteDatabase);
+    }
+
+    public void insertStepDistance(StepDistance sd){
+        SQLiteDatabase db = getWritableDatabase();
+
+        ContentValues record = new ContentValues();
+        record.put("Date",sd.getDate());
+        record.put("Step",sd.getStep());
+        record.put("Distance",sd.getDistance());
+
+        db.insert("StepDistance",null,record);
     }
 }
