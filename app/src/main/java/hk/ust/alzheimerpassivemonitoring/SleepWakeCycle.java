@@ -5,38 +5,38 @@ package hk.ust.alzheimerpassivemonitoring;
  */
 
 public class SleepWakeCycle {
-    private long StartTime;
-    private long EndTime;
-    private String SleepStage;
+    private long startTime;
+    private long endTime;
+    private String sleepStage;
 
 
     public SleepWakeCycle(long startTime, long endTime, String sleepStage) {
-        StartTime = startTime;
-        EndTime = endTime;
-        SleepStage = sleepStage;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.sleepStage = sleepStage;
     }
 
     public long getStartTime() {
-        return StartTime;
+        return startTime;
     }
 
     public void setStartTime(long startTime) {
-        StartTime = startTime;
+        this.startTime = startTime;
     }
 
     public long getEndTime() {
-        return EndTime;
+        return endTime;
     }
 
     public void setEndTime(long endTime) {
-        EndTime = endTime;
+        this.endTime = endTime;
     }
 
     public String getSleepStage() {
-        return SleepStage;
+        return sleepStage;
     }
 
     public void setSleepStage(String sleepStage) {
-        SleepStage = sleepStage;
+        this.sleepStage = sleepStage;
     }
 }

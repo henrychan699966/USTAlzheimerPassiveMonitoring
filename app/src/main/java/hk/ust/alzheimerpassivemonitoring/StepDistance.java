@@ -5,37 +5,38 @@ package hk.ust.alzheimerpassivemonitoring;
  */
 
 public class StepDistance {
-    private String Date;        //YYYYMMDD
-    private int Step;
-    private float Distance;
+    private String date;        //YYYYMMDD
+    private int step;
+    private float distance;
+
 
     public StepDistance(String date, int step, float distance) {
-        Date = date;
-        Step = step;
-        Distance = distance;
+        this.date = date;
+        this.step = step;
+        this.distance = distance;
     }
 
     public String getDate() {
-        return Date;
+        return date;
     }
 
     public void setDate(String date) {
-        Date = date;
+        this.date = date;
     }
 
     public int getStep() {
-        return Step;
+        return step;
     }
 
     public void setStep(int step) {
-        Step = step;
+        this.step = step;
     }
 
     public float getDistance() {
-        return Distance;
+        return distance;
     }
 
     public void setDistance(float distance) {
-        Distance = distance;
+        this.distance = distance;
     }
 }

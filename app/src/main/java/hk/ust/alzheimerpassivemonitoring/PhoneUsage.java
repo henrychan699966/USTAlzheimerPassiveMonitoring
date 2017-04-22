@@ -5,54 +5,54 @@ package hk.ust.alzheimerpassivemonitoring;
  */
 
 public class PhoneUsage {
-    private int EventID;
-    private String Activity;
-    private long StartTime;
-    private long EndTime;
-
-    public PhoneUsage(String a, long s, long e){
-        this.Activity = a;
-        this.StartTime = s;
-        this.EndTime = e;
-    }
-
-    public PhoneUsage(int id, String a, long s, long e){
-        this.EventID = id;
-        this.Activity = a;
-        this.StartTime = s;
-        this.EndTime = e;
-    }
-
+    private int eventID;
+    private String activity;
+    private long startTime;
+    private long endTime;
 
     public int getEventID() {
-        return EventID;
-    }
-
-    public String getActivity() {
-        return Activity;
-    }
-
-    public long getStartTime() {
-        return StartTime;
-    }
-
-    public long getEndTime() {
-        return EndTime;
+        return eventID;
     }
 
     public void setEventID(int eventID) {
-        EventID = eventID;
+        this.eventID = eventID;
+    }
+
+    public String getActivity() {
+        return activity;
     }
 
     public void setActivity(String activity) {
-        Activity = activity;
+        this.activity = activity;
+    }
+
+    public long getStartTime() {
+        return startTime;
     }
 
     public void setStartTime(long startTime) {
-        StartTime = startTime;
+        this.startTime = startTime;
+    }
+
+    public long getEndTime() {
+        return endTime;
     }
 
     public void setEndTime(long endTime) {
-        EndTime = endTime;
+        this.endTime = endTime;
+    }
+
+    public PhoneUsage(int eventID, String activity, long startTime, long endTime) {
+        this.eventID = eventID;
+        this.activity = activity;
+
+        this.startTime = startTime;
+        this.endTime = endTime;
+    }
+
+    public PhoneUsage(String activity, long startTime, long endTime) {
+        this.activity = activity;
+        this.startTime = startTime;
+        this.endTime = endTime;
     }
 }
