@@ -19,7 +19,7 @@ public class SQLiteHelper extends SQLiteOpenHelper{
     private static final String CREATE_TABLE_LocationRecord =
             "CREATE TABLE LocationRecord (RecordTime BIGINT PRIMARY KEY, Latitude REAL, Longitude REAL);";
     private static final String CREATE_TABLE_PhoneUsage =
-            "CREATE TABLE PhoneUsage (EventID INTEGER PRIMARY KEY, Activity VARCHAR(20), StartTime BIGINT, EndTime BIGINT);";
+            "CREATE TABLE PhoneUsage (EventID INTEGER PRIMARY KEY AUTOINCREMENT, Activity VARCHAR(40), StartTime BIGINT, EndTime BIGINT);";
     private static final String CREATE_TABLE_SleepWakeCycle =
             "CREATE TABLE SleepWakeCycle (StartTime BIGINT PRIMARY KEY, EndTime BIGINT, SleepStage VARCHAR(5));";
 
@@ -49,14 +49,4 @@ public class SQLiteHelper extends SQLiteOpenHelper{
         onCreate(sqLiteDatabase);
     }
 
-    public void insertStepDistance(StepDistance sd){
-        SQLiteDatabase db = getWritableDatabase();
-
-        ContentValues record = new ContentValues();
-        record.put("Date",sd.getDate());
-        record.put("Step",sd.getStep());
-        record.put("Distance",sd.getDistance());
-
-        db.insert("StepDistance",null,record);
-    }
 }

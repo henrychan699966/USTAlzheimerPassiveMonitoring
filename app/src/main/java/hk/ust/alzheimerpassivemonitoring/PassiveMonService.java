@@ -1,6 +1,8 @@
 package hk.ust.alzheimerpassivemonitoring;
 
+import android.app.AlarmManager;
 import android.app.Notification;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.app.usage.UsageEvents;
 import android.app.usage.UsageStatsManager;
@@ -8,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.IBinder;
+import android.os.SystemClock;
 
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -37,7 +40,6 @@ public class PassiveMonService extends Service {
                 .build();
         //an arbitrary id
         ONGOING_NOTIFICATION_ID = (int)System.currentTimeMillis();
-
         super.onCreate();
 
     }
@@ -45,7 +47,23 @@ public class PassiveMonService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         startForeground(ONGOING_NOTIFICATION_ID,notification);
-        getAppUsage();
+
+        SQLiteCRUD database = new SQLiteCRUD(this);
+        database.openDatabase();
+
+        List<PhoneUsage> appUsage = getAppUsage(120);
+        for(PhoneUsage pu : appUsage){
+            database.createPhoneUsage(pu);
+        }
+
+        database.closeDatabase();
+
+
+        Intent alarm = new Intent(getApplicationContext(),this.getClass());
+        setAlarm(alarm,120);
+
+        try{Thread.sleep(5000);}catch (InterruptedException e){}
+        stopSelf();
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -61,9 +79,10 @@ public class PassiveMonService extends Service {
         return null;
     }
 
-    private List<List<String>> getAppUsage(){
+    //get app usage from s seconds ago to now
+    private List<PhoneUsage> getAppUsage(int s){
         UsageStatsManager mUsageStatsManager = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
-        UsageEvents usageEvents = mUsageStatsManager.queryEvents(System.currentTimeMillis()- TimeUnit.SECONDS.toMillis(120),System.currentTimeMillis());
+        UsageEvents usageEvents = mUsageStatsManager.queryEvents(System.currentTimeMillis()- TimeUnit.SECONDS.toMillis(s),System.currentTimeMillis());
 
         PackageManager packageManager = getApplicationContext().getPackageManager();
 
@@ -76,7 +95,7 @@ public class PassiveMonService extends Service {
             }
         }
 
-        List<List<String>> appUsage = new ArrayList<>();
+        List<PhoneUsage> appUsage = new ArrayList<>();
         for(int i = 0; i < events.size();i++){
             if(events.get(i).getEventType() == UsageEvents.Event.MOVE_TO_BACKGROUND) continue;
 
@@ -99,15 +118,19 @@ public class PassiveMonService extends Service {
             }
 
             if(endTime != 0){
-                List<String> record = new ArrayList<>();
-                record.add(appName);
-                record.add(Long.toString(events.get(i).getTimeStamp()));
-                record.add(Long.toString(endTime));
-                appUsage.add(record);
-                Log.e("PMService",appName + " " + Long.toString(events.get(i).getTimeStamp()) + " " + Long.toString(endTime));
+                PhoneUsage au = new PhoneUsage(appName,events.get(i).getTimeStamp(),endTime);
+                appUsage.add(au);
+                Log.e("getAppUsage",au.getActivity() + " " + Long.toString(au.getStartTime()) + " " + Long.toString(au.getEndTime()));
             }
         }
 
         return appUsage;
+    }
+
+    //set an alarm which triggered after s seconds
+    private void setAlarm(Intent intent, int s){
+        AlarmManager am = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
+        PendingIntent alarmIntent = PendingIntent.getService(this,0,intent,0);
+        am.setExact(AlarmManager.RTC_WAKEUP,System.currentTimeMillis() + s*1000,alarmIntent);
     }
 }

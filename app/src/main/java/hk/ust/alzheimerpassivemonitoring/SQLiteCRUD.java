@@ -124,13 +124,6 @@ public class SQLiteCRUD {
 
         ContentValues record = new ContentValues();
 
-        Cursor cursor = db.query("PhoneUsage",null,null, null, null, null, null);
-        if(cursor.getCount() > 0){
-            cursor.moveToLast();
-        }
-        else return false;
-
-        record.put("EventID",cursor.getInt(0) + 1);
         record.put("Activity",pu.getActivity());
         record.put("StartTime",pu.getStartTime());
         record.put("EndTime",pu.getEndTime());
