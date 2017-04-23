@@ -10,12 +10,21 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.IBinder;
-import android.os.SystemClock;
+
 
 import android.support.annotation.Nullable;
 import android.util.Log;
-import android.widget.Toast;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.reflect.TypeToken;
+
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -29,7 +38,7 @@ public class PassiveMonService extends Service {
 
     private Notification notification;
     private int ONGOING_NOTIFICATION_ID;
-
+    private Context context;
     @Override
     public void onCreate() {
 
@@ -40,8 +49,8 @@ public class PassiveMonService extends Service {
                 .build();
         //an arbitrary id
         ONGOING_NOTIFICATION_ID = (int)System.currentTimeMillis();
+        context = this;
         super.onCreate();
-
     }
 
     @Override
@@ -57,6 +66,17 @@ public class PassiveMonService extends Service {
         }
 
         database.closeDatabase();
+
+        FileOutputStream test = null;
+        try{
+            test = openFileOutput("test", Context.MODE_PRIVATE);
+        }
+        catch (FileNotFoundException e){}
+
+        try {
+            test.write(extractAllData(context).getBytes());
+        }
+        catch (IOException e){}
 
 
         Intent alarm = new Intent(getApplicationContext(),this.getClass());
@@ -133,4 +153,50 @@ public class PassiveMonService extends Service {
         PendingIntent alarmIntent = PendingIntent.getService(this,0,intent,0);
         am.setExact(AlarmManager.RTC_WAKEUP,System.currentTimeMillis() + s*1000,alarmIntent);
     }
+
+    public String extractAllData(Context context){
+        String[] s = new String[4];
+
+        SQLiteCRUD database = new SQLiteCRUD(context);
+        database.openDatabase();
+
+        Type type = new TypeToken<List<PhoneUsage>>(){}.getType();
+        s[0] = new Gson().toJson(database.readAllPhoneUsage(0),type);
+
+        type= new TypeToken<List<StepDistance>>(){}.getType();
+        s[1] = new Gson().toJson(database.readAllStepDistance(),type);
+
+        type = new TypeToken<List<LocationRecord>>(){}.getType();
+        s[2] = new Gson().toJson(database.readAllLocationRecord(0),type);
+
+        type = new TypeToken<List<SleepWakeCycle>>(){}.getType();
+        s[3] = new Gson().toJson(database.readAllSleepWakeCycle(0),type);
+        database.closeDatabase();
+
+        JsonParser jp = new JsonParser();
+        JsonArray[] ja = new JsonArray[4];
+        for(int i = 0;i<4;i++){
+            try{
+                ja[i] = (JsonArray) jp.parse(s[i]);
+            }
+            catch (RuntimeException e){
+                ja[i] = new JsonArray();
+            }
+        }
+
+
+        JsonObject data = new JsonObject();
+        data.add("PhoneUsage",ja[0]);
+        data.add("StepDistance",ja[1]);
+        data.add("LocationRecord",ja[2]);
+        data.add("SleepWakeCycle",ja[3]);
+
+        JsonObject output = new JsonObject();
+        output.add("data",data);
+        output.addProperty("PhoneNum","12345678");
+
+        return new Gson().toJson(output);
+    }
+
+
 }

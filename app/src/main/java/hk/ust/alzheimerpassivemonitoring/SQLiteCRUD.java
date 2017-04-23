@@ -101,7 +101,7 @@ public class SQLiteCRUD {
     }
 
     //read all records since recordTime, pass 0 for all records without constraints
-    public List<LocationRecord> readAllStepDistance(long recordTime){
+    public List<LocationRecord> readAllLocationRecord(long recordTime){
         Cursor cursor = db.query("LocationRecord",null,"RecordTime > " + recordTime, null, null, null, null);
         if(cursor.getCount() > 0){
             cursor.moveToFirst();
