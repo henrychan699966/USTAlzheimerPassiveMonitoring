@@ -3,12 +3,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="hk.ust.alzheimerpassivemonitoring">
 
-    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS"
-        tools:ignore="ProtectedPermissions"/>
+    <uses-permission
+        android:name="android.permission.PACKAGE_USAGE_STATS"
+        tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.READ_CALL_LOG"/>
     <uses-permission android:name="android.permission.WRITE_CALL_LOG"/>
-
 
     <application
         android:allowBackup="true"
@@ -20,6 +20,7 @@
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -30,8 +31,12 @@
             </intent-filter>
         </receiver>
 
-        <service android:name=".PassiveMonService"/>
+        <service android:name=".PassiveMonService" />
 
+        <activity
+            android:name=".GraphPlotter"
+            android:label="@string/title_activity_graph_plotter"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>
