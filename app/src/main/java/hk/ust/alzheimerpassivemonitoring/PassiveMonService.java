@@ -49,7 +49,7 @@ public class PassiveMonService extends Service {
     private Context context;
 
     CursorLoader cursorLoader;
-    private static final String[] callLogItem = {"TYPE", "DATE", "DURATION"};
+    private static final String[] callLogItem = {CallLog.Calls.TYPE, CallLog.Calls.DATE, CallLog.Calls.DURATION};
 
     @Override
     public void onCreate() {
@@ -74,14 +74,20 @@ public class PassiveMonService extends Service {
         database.openDatabase();
 
         List<PhoneUsage> appUsage = getAppUsage(120);
-        for (PhoneUsage pu : appUsage) {
-            database.createPhoneUsage(pu);
+        if(!appUsage.isEmpty()){
+            for (PhoneUsage pu : appUsage) {
+                database.createPhoneUsage(pu);
+            }
         }
 
+
         List<PhoneUsage> callHistory = getCallHistory(120);
-        for (PhoneUsage pu : callHistory) {
-            database.createPhoneUsage(pu);
+        if(callHistory != null){
+            for (PhoneUsage pu : callHistory) {
+                database.createPhoneUsage(pu);
+            }
         }
+
 
         database.closeDatabase();
 
@@ -224,7 +230,7 @@ public class PassiveMonService extends Service {
         return new Gson().toJson(output);
     }
 
-
+    //get call log s seconds before current time
     private List<PhoneUsage> getCallHistory(int s) {
         List<PhoneUsage> records = new ArrayList<>();
         ContentResolver contentResolver = getContentResolver();
@@ -232,29 +238,33 @@ public class PassiveMonService extends Service {
             return null;
         }
 
-        Cursor cursor = contentResolver.query(CallLog.Calls.CONTENT_URI, callLogItem, "DATE >=" + (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(s)), null, null);
+        Cursor cursor = contentResolver.query(CallLog.Calls.CONTENT_URI, callLogItem,CallLog.Calls.DATE + ">=" + (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(s)), null, null);
 
+        Log.e("getCallHistory",Integer.toString(cursor.getCount()));
         if(cursor.getCount() > 0) {
             cursor.moveToFirst();
 
             while (!cursor.isAfterLast()) {
                 PhoneUsage pu;
-                switch (cursor.getColumnIndex(CallLog.Calls.TYPE)) {
+                switch (cursor.getInt(cursor.getColumnIndex(CallLog.Calls.TYPE))) {
                     case 1:
-                        pu = new PhoneUsage("PhoneCall IN", cursor.getColumnIndex(CallLog.Calls.DATE), cursor.getColumnIndex(CallLog.Calls.DATE) + cursor.getColumnIndex(CallLog.Calls.DURATION) * 1000);
+                        pu = new PhoneUsage("PhoneCall IN", cursor.getLong(cursor.getColumnIndex(CallLog.Calls.DATE)), cursor.getLong(cursor.getColumnIndex(CallLog.Calls.DATE)) + cursor.getColumnIndex(CallLog.Calls.DURATION) * 1000);
                         records.add(pu);
+                        Log.e("getCallHistory", pu.getActivity() + " " + Long.toString(pu.getStartTime()) + " " + Long.toString(pu.getEndTime()));
                         break;
                     case 2:
-                        pu = new PhoneUsage("PhoneCall OUT", cursor.getColumnIndex(CallLog.Calls.DATE), cursor.getColumnIndex(CallLog.Calls.DATE) + cursor.getColumnIndex(CallLog.Calls.DURATION) * 1000);
+                        pu = new PhoneUsage("PhoneCall OUT", cursor.getLong(cursor.getColumnIndex(CallLog.Calls.DATE)), cursor.getLong(cursor.getColumnIndex(CallLog.Calls.DATE)) + cursor.getColumnIndex(CallLog.Calls.DURATION) * 1000);
                         records.add(pu);
+                        Log.e("getCallHistory", pu.getActivity() + " " + Long.toString(pu.getStartTime()) + " " + Long.toString(pu.getEndTime()));
                         break;
                 }
-
                 cursor.moveToNext();
 
             }
+            cursor.close();
             return records;
         }
+        cursor.close();
         return null;
     }
 
