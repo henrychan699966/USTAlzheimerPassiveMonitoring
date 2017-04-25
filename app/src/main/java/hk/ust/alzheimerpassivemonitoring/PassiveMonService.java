@@ -12,17 +12,21 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.location.Location;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.CallLog;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.LoaderManager;
 
-import android.provider.ContactsContract;
+
 import android.support.annotation.Nullable;
-import android.support.v4.content.CursorLoader;
-import android.support.v4.content.Loader;
+
 import android.util.Log;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -42,17 +46,21 @@ import java.util.concurrent.TimeUnit;
  * Created by henry on 2017-04-18.
  */
 
-public class PassiveMonService extends Service {
+public class PassiveMonService extends Service implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+
+    private GoogleApiClient googleApiClient;
 
     private Notification notification;
     private int ONGOING_NOTIFICATION_ID;
     private Context context;
 
-    CursorLoader cursorLoader;
     private static final String[] callLogItem = {CallLog.Calls.TYPE, CallLog.Calls.DATE, CallLog.Calls.DURATION};
 
     @Override
     public void onCreate() {
+        Log.e("Service","onCreate");
+        googleApiClient = new GoogleApiClient.Builder(this).addConnectionCallbacks(this).addOnConnectionFailedListener(this).addApi(LocationServices.API).build();
+
 
         notification = new Notification.Builder(getApplicationContext())
                 .setContentTitle("Passive Monitoring")
@@ -68,13 +76,16 @@ public class PassiveMonService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         startForeground(ONGOING_NOTIFICATION_ID, notification);
+        Log.e("Service","onStartCommand");
+        //for location retrieval
+        googleApiClient.connect();
 
 
         SQLiteCRUD database = new SQLiteCRUD(this);
         database.openDatabase();
 
         List<PhoneUsage> appUsage = getAppUsage(120);
-        if(!appUsage.isEmpty()){
+        if (!appUsage.isEmpty()) {
             for (PhoneUsage pu : appUsage) {
                 database.createPhoneUsage(pu);
             }
@@ -82,7 +93,7 @@ public class PassiveMonService extends Service {
 
 
         List<PhoneUsage> callHistory = getCallHistory(120);
-        if(callHistory != null){
+        if (callHistory != null) {
             for (PhoneUsage pu : callHistory) {
                 database.createPhoneUsage(pu);
             }
@@ -118,7 +129,7 @@ public class PassiveMonService extends Service {
 
     @Override
     public void onDestroy() {
-
+        googleApiClient.disconnect();
         stopForeground(true);
         super.onDestroy();
     }
@@ -238,10 +249,10 @@ public class PassiveMonService extends Service {
             return null;
         }
 
-        Cursor cursor = contentResolver.query(CallLog.Calls.CONTENT_URI, callLogItem,CallLog.Calls.DATE + ">=" + (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(s)), null, null);
+        Cursor cursor = contentResolver.query(CallLog.Calls.CONTENT_URI, callLogItem, CallLog.Calls.DATE + ">=" + (System.currentTimeMillis() - TimeUnit.SECONDS.toMillis(s)), null, null);
 
-        Log.e("getCallHistory",Integer.toString(cursor.getCount()));
-        if(cursor.getCount() > 0) {
+        Log.e("getCallHistory", Integer.toString(cursor.getCount()));
+        if (cursor.getCount() > 0) {
             cursor.moveToFirst();
 
             while (!cursor.isAfterLast()) {
@@ -268,4 +279,31 @@ public class PassiveMonService extends Service {
         return null;
     }
 
+
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+        Log.e("getLocation","onConnected");
+        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        Location location = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
+        if (location != null) {
+            SQLiteCRUD database = new SQLiteCRUD(this);
+            database.openDatabase();
+            LocationRecord locationRecord = new LocationRecord(location.getTime(),(float)location.getLatitude(),(float)location.getLongitude());
+            database.createLocationRecord(locationRecord);
+            Log.e("getLocation", locationRecord.getRecordTime() + " " + locationRecord.getLatitude() + " " + locationRecord.getLongitude());
+            database.closeDatabase();
+        }
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        Log.e("getLocation","onConnectionSuspended");
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        Log.e("getLocation","onConnectionFailed");
+    }
 }
