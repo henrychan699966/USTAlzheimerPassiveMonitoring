@@ -25,6 +25,8 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.gson.Gson;
@@ -59,7 +61,10 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
     @Override
     public void onCreate() {
         Log.e("Service","onCreate");
-        googleApiClient = new GoogleApiClient.Builder(this).addConnectionCallbacks(this).addOnConnectionFailedListener(this).addApi(LocationServices.API).build();
+        context = this;
+        if(checkPlayServices()){
+            buildGoogleApiClient();
+        }
 
 
         notification = new Notification.Builder(getApplicationContext())
@@ -69,7 +74,7 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
                 .build();
         //an arbitrary id
         ONGOING_NOTIFICATION_ID = (int) System.currentTimeMillis();
-        context = this;
+
         super.onCreate();
     }
 
@@ -77,9 +82,12 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
     public int onStartCommand(Intent intent, int flags, int startId) {
         startForeground(ONGOING_NOTIFICATION_ID, notification);
         Log.e("Service","onStartCommand");
-        //for location retrieval
-        googleApiClient.connect();
 
+//        if(googleApiClient != null){
+//            //for location retrieval
+//            Log.e("getLocation","Trying Connect");
+//            googleApiClient.connect();
+//        }
 
         SQLiteCRUD database = new SQLiteCRUD(this);
         database.openDatabase();
@@ -119,17 +127,19 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
         Intent alarm = new Intent(getApplicationContext(), this.getClass());
         setAlarm(alarm, 120);
 
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-        }
+//        try {
+//                Thread.sleep(1000);
+//
+//        } catch (InterruptedException e) {
+//        }
         stopSelf();
         return super.onStartCommand(intent, flags, startId);
     }
 
     @Override
     public void onDestroy() {
-        googleApiClient.disconnect();
+        if(googleApiClient != null)googleApiClient.disconnect();
+
         stopForeground(true);
         super.onDestroy();
     }
@@ -305,5 +315,28 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         Log.e("getLocation","onConnectionFailed");
+    }
+
+    private boolean checkPlayServices() {
+        GoogleApiAvailability googleApiAvailability = GoogleApiAvailability.getInstance();
+        int status = googleApiAvailability.isGooglePlayServicesAvailable(this);
+        if (status != ConnectionResult.SUCCESS) {
+            if (googleApiAvailability.isUserResolvableError(status)) {
+                Log.e("PlayService", "Fail");
+            }
+            return false;
+        }
+        Log.e("PlayService", "OK");
+        return true;
+    }
+
+    protected synchronized void buildGoogleApiClient() {
+        googleApiClient = new GoogleApiClient.Builder(context)
+                .addApi(LocationServices.API)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .build();
+        googleApiClient.connect();
+        Log.e("GoogleApi","Try Connect");
     }
 }
