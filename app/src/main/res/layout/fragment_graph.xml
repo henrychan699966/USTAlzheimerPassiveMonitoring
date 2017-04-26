@@ -8,15 +8,14 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="hk.ust.alzheimerpassivemonitoring.GraphPlotter$GraphFragment">
 
-    <TextView
-        android:id="@+id/section_info"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-
-    <com.github.mikephil.charting.charts.CombinedChart
-        android:id="@+id/chart"
+    <com.github.mikephil.charting.charts.LineChart
+        android:id="@+id/chart1"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@+id/section_info"/>
+        android:layout_height="match_parent" />
+
+    <com.github.mikephil.charting.charts.PieChart
+        android:id="@+id/chart2"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
 </RelativeLayout>
