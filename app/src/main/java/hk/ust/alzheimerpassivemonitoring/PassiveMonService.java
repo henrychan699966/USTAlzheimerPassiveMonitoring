@@ -15,6 +15,7 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.provider.CallLog;
@@ -30,6 +31,8 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -37,9 +40,12 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,13 +56,14 @@ import java.util.concurrent.TimeUnit;
  * Created by henry on 2017-04-18.
  */
 
-public class PassiveMonService extends Service implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class PassiveMonService extends Service implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
     private GoogleApiClient googleApiClient;
     private boolean intentToGetLocation;
     private boolean intentToDoDailyTask;
 
-    private static final int LOCATION_RETRIEVE_INTERVAL = 15; //minutes
+    private static final int LOCATION_RETRIEVE_INTERVAL = 25; //seconds
+    private static final int DAILY_TASK_INTERVAL = 60; //seconds
     private static final String LAST_UPLOAD_TIME = "LastUploadTime";
     private static final String LAST_LOCATION_TIME = "LastLocationTime";
 
@@ -73,8 +80,6 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
 
         intentToDoDailyTask = false;
         intentToGetLocation =true;
-
-
 
         notification = new Notification.Builder(getApplicationContext())
                 .setContentTitle("Passive Monitoring")
@@ -94,15 +99,12 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
         startForeground(ONGOING_NOTIFICATION_ID, notification);
         Log.e("Service","onStartCommand");
 
-        writeSharedPref("Test","abc");
-        Log.e("SharedPref",readSharedPref("Test"));
-
         if(intentToDoDailyTask){
             dailyTask();
         }
 
         Intent alarm = new Intent(getApplicationContext(), this.getClass());
-        setAlarm(alarm, LOCATION_RETRIEVE_INTERVAL * 60);
+        setAlarm(alarm, LOCATION_RETRIEVE_INTERVAL);
 
         try {
                 Thread.sleep(5000);
@@ -139,7 +141,7 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
             intentToDoDailyTask = true;
             return;
         }
-        if(System.currentTimeMillis() - Long.parseLong(readSharedPref(LAST_UPLOAD_TIME)) > TimeUnit.DAYS.toMillis(1)){
+        if(System.currentTimeMillis() - Long.parseLong(readSharedPref(LAST_UPLOAD_TIME)) > DAILY_TASK_INTERVAL){
             intentToDoDailyTask= true;
         }
         else{
@@ -165,7 +167,7 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
     }
 
     private void dailyTask(){
-        int time = (int) TimeUnit.DAYS.toSeconds(1);
+        int time = DAILY_TASK_INTERVAL;
 
         SQLiteCRUD database = new SQLiteCRUD(this);
         database.openDatabase();
@@ -187,8 +189,6 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
         database.closeDatabase();
 
         //Update Last upload time
-        writeSharedPref(LAST_UPLOAD_TIME,Long.toString(System.currentTimeMillis()));
-
         FileOutputStream test = null;
         try {
             test = openFileOutput("test", Context.MODE_PRIVATE);
@@ -351,6 +351,13 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
             return;
         }else{Log.e("getLocation","Permission OK");}
 
+        LocationRequest locationRequest = LocationRequest.create()
+                .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+                .setInterval(5 * 1000)        // 10 seconds, in milliseconds
+                .setFastestInterval(1 * 1000); // 1 second, in milliseconds
+
+        LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest,this);
+
         Location location = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
         if (location != null) {
 
@@ -359,6 +366,7 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
                 if(location.getTime() <= Long.parseLong(readSharedPref(LAST_LOCATION_TIME))){
                     Log.e("GetLocation","Repeated");
                     stopSelf();
+                    return;
                 }
             }
 
@@ -411,5 +419,10 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
                 .build();
         googleApiClient.connect();
         Log.e("GoogleApi","Try Connect");
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+
     }
 }
