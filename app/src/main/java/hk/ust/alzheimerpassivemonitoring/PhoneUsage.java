@@ -1,10 +1,13 @@
 package hk.ust.alzheimerpassivemonitoring;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 /**
  * Created by henry on 2017-04-20.
  */
 
-public class PhoneUsage {
+public class PhoneUsage implements Parcelable {
     private int eventID;
     private String activity;
     private long startTime;
@@ -55,4 +58,38 @@ public class PhoneUsage {
         this.startTime = startTime;
         this.endTime = endTime;
     }
+
+    public PhoneUsage(Parcel in) {
+        long[] data = new long[2];
+        in.readLongArray(data);
+        eventID = in.readInt();
+        activity = in.readString();
+        startTime = data[0];
+        endTime = data[1];
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(eventID);
+        dest.writeString(activity);
+        dest.writeLongArray(new long[] {startTime,endTime});
+    }
+
+    public static final Parcelable.Creator<PhoneUsage>CREATOR = new Parcelable.Creator<PhoneUsage>() {
+        @Override
+        public PhoneUsage createFromParcel(Parcel source) {
+            return new PhoneUsage(source);
+        }
+
+        @Override
+        public PhoneUsage[] newArray(int size) {
+            return new PhoneUsage[size];
+        }
+    };
+
 }
