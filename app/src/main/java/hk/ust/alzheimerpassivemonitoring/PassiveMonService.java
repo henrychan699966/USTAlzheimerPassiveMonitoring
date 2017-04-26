@@ -89,9 +89,9 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
 //            googleApiClient.connect();
 //        }
 
+
         SQLiteCRUD database = new SQLiteCRUD(this);
         database.openDatabase();
-
         List<PhoneUsage> appUsage = getAppUsage(120);
         if (!appUsage.isEmpty()) {
             for (PhoneUsage pu : appUsage) {
@@ -132,7 +132,7 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
 //
 //        } catch (InterruptedException e) {
 //        }
-        stopSelf();
+//        stopSelf();
         return super.onStartCommand(intent, flags, startId);
     }
 

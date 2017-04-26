@@ -4,9 +4,15 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by henry on 2017-04-21.
@@ -43,7 +49,7 @@ public class SQLiteCRUD {
         return true;
     }
 
-    public StepDistance readStepDistance(String date){
+    public List<StepDistance> readStepDistance(String date){
 
         Cursor cursor = db.query("StepDistance",null,"Date = " + date, null, null, null, null);
         if(cursor.getCount() > 0){
@@ -51,9 +57,15 @@ public class SQLiteCRUD {
         }
         else return null;
 
-        StepDistance sd = new StepDistance(cursor.getString(0),cursor.getInt(1),cursor.getFloat(2));
+        List<StepDistance> records = new ArrayList<>();
+        while(!cursor.isAfterLast()){
+            StepDistance sd = new StepDistance(cursor.getString(0),cursor.getInt(1),cursor.getFloat(2));
+            records.add(sd);
+            cursor.moveToNext();
+        }
+
         cursor.close();
-        return sd;
+        return records;
     }
 
     public List<StepDistance> readAllStepDistance(){
@@ -87,9 +99,10 @@ public class SQLiteCRUD {
         return true;
     }
 
-    public LocationRecord readLocationRecord(long recordTime){
+    //YYYYMMDD
+    public LocationRecord readLocationRecord(String date){
 
-        Cursor cursor = db.query("LocationRecord",null,"RecordTime = " + recordTime, null, null, null, null);
+        Cursor cursor = db.query("LocationRecord",null,"RecordTime > " + dateToEpoch(date) + " and RecordTime < " + (dateToEpoch(date)+ TimeUnit.DAYS.toMillis(1)), null, null, null, null);
         if(cursor.getCount() > 0){
             cursor.moveToFirst();
         }
@@ -133,17 +146,22 @@ public class SQLiteCRUD {
         return true;
     }
 
-    public PhoneUsage readPhoneUsage(int eventID){
+    public List<PhoneUsage> readPhoneUsage(String date){
 
-        Cursor cursor = db.query("PhoneUsage",null,"EventID =" + eventID, null, null, null, null);
+        Cursor cursor = db.query("PhoneUsage",null,"StartTime > " + dateToEpoch(date) + " and StartTime < "+ (dateToEpoch(date)+ TimeUnit.DAYS.toMillis(1)), null, null, null, null);
         if(cursor.getCount() > 0){
             cursor.moveToFirst();
         }
         else return null;
 
-        PhoneUsage pu = new PhoneUsage(cursor.getInt(0),cursor.getString(1),cursor.getLong(2),cursor.getLong(3));
+        List<PhoneUsage> records = new ArrayList<>();
+        while (!cursor.isAfterLast()) {
+            PhoneUsage pu = new PhoneUsage(cursor.getInt(0),cursor.getString(1),cursor.getLong(2),cursor.getLong(3));
+            records.add(pu);
+            cursor.moveToNext();
+        }
         cursor.close();
-        return pu;
+        return records;
     }
 
     //read all records since startTime, pass 0 for all records without constraints
@@ -178,17 +196,22 @@ public class SQLiteCRUD {
         return true;
     }
 
-    public SleepWakeCycle readSleepWakeCycle(long startTime){
+    public List<SleepWakeCycle> readSleepWakeCycle(String date){
 
-        Cursor cursor = db.query("SleepWakeCycle",null,"StartTime = " + startTime, null, null, null, null);
+        Cursor cursor = db.query("SleepWakeCycle",null,"StartTime > " + dateToEpoch(date) + " and StartTime < "+ (dateToEpoch(date)+ TimeUnit.DAYS.toMillis(1)), null, null, null, null);
         if(cursor.getCount() > 0){
             cursor.moveToFirst();
         }
         else return null;
 
-        SleepWakeCycle swc = new SleepWakeCycle(cursor.getLong(0),cursor.getLong(1),cursor.getString(2));
+        List<SleepWakeCycle> records = new ArrayList<>();
+        while (!cursor.isAfterLast()) {
+            SleepWakeCycle swc = new SleepWakeCycle(cursor.getLong(0),cursor.getLong(1),cursor.getString(2));
+            records.add(swc);
+            cursor.moveToNext();
+        }
         cursor.close();
-        return swc;
+        return records;
     }
 
     //read all records since recordTime, pass 0 for all records without constraints
@@ -208,5 +231,17 @@ public class SQLiteCRUD {
 
         cursor.close();
         return records;
+    }
+
+    public long dateToEpoch(String date){
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+        Date d;
+        try {
+            d = sdf.parse(date);
+        } catch (ParseException e) {
+            throw new RuntimeException("Failed to parse date: ", e);
+        }
+
+        return d.getTime();
     }
 }
