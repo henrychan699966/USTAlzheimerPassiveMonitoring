@@ -10,11 +10,13 @@ import android.app.usage.UsageStatsManager;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.provider.CallLog;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -51,6 +53,12 @@ import java.util.concurrent.TimeUnit;
 public class PassiveMonService extends Service implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     private GoogleApiClient googleApiClient;
+    private boolean intentToGetLocation;
+    private boolean intentToDoDailyTask;
+
+    private static final int LOCATION_RETRIEVE_INTERVAL = 15; //minutes
+    private static final String LAST_UPLOAD_TIME = "LastUploadTime";
+    private static final String LAST_LOCATION_TIME = "LastLocationTime";
 
     private Notification notification;
     private int ONGOING_NOTIFICATION_ID;
@@ -62,9 +70,10 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
     public void onCreate() {
         Log.e("Service","onCreate");
         context = this;
-        if(checkPlayServices()){
-            buildGoogleApiClient();
-        }
+
+        intentToDoDailyTask = false;
+        intentToGetLocation =true;
+
 
 
         notification = new Notification.Builder(getApplicationContext())
@@ -75,6 +84,8 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
         //an arbitrary id
         ONGOING_NOTIFICATION_ID = (int) System.currentTimeMillis();
 
+        scheduler();
+
         super.onCreate();
     }
 
@@ -83,56 +94,29 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
         startForeground(ONGOING_NOTIFICATION_ID, notification);
         Log.e("Service","onStartCommand");
 
-//        if(googleApiClient != null){
-//            //for location retrieval
-//            Log.e("getLocation","Trying Connect");
-//            googleApiClient.connect();
-//        }
+        writeSharedPref("Test","abc");
+        Log.e("SharedPref",readSharedPref("Test"));
 
-
-        SQLiteCRUD database = new SQLiteCRUD(this);
-        database.openDatabase();
-        List<PhoneUsage> appUsage = getAppUsage(120);
-        if (!appUsage.isEmpty()) {
-            for (PhoneUsage pu : appUsage) {
-                database.createPhoneUsage(pu);
-            }
+        if(intentToDoDailyTask){
+            dailyTask();
         }
-
-
-        List<PhoneUsage> callHistory = getCallHistory(120);
-        if (callHistory != null) {
-            for (PhoneUsage pu : callHistory) {
-                database.createPhoneUsage(pu);
-            }
-        }
-
-
-        database.closeDatabase();
-
-        getCallHistory(120);
-
-        FileOutputStream test = null;
-        try {
-            test = openFileOutput("test", Context.MODE_PRIVATE);
-        } catch (FileNotFoundException e) {
-        }
-
-        try {
-            test.write(extractAllData(context).getBytes());
-        } catch (IOException e) {
-        }
-
 
         Intent alarm = new Intent(getApplicationContext(), this.getClass());
-        setAlarm(alarm, 120);
+        setAlarm(alarm, LOCATION_RETRIEVE_INTERVAL * 60);
 
-//        try {
-//                Thread.sleep(1000);
-//
-//        } catch (InterruptedException e) {
-//        }
-//        stopSelf();
+        try {
+                Thread.sleep(5000);
+
+        } catch (InterruptedException e) {
+        }
+
+        if(checkPlayServices() && intentToGetLocation){
+            buildGoogleApiClient();
+        }
+        else{
+            stopSelf();
+        }
+
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -148,6 +132,73 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
     @Override
     public IBinder onBind(Intent intent) {
         return null;
+    }
+
+    private void scheduler(){
+        if(!existSharedPref(LAST_UPLOAD_TIME)){
+            intentToDoDailyTask = true;
+            return;
+        }
+        if(System.currentTimeMillis() - Long.parseLong(readSharedPref(LAST_UPLOAD_TIME)) > TimeUnit.DAYS.toMillis(1)){
+            intentToDoDailyTask= true;
+        }
+        else{
+            intentToDoDailyTask = false;
+        }
+    }
+
+    private boolean existSharedPref(String key){
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        return sharedPref.contains(key);
+    }
+
+    private void writeSharedPref(String key,String value){
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString(key,value);
+        editor.commit();
+    }
+
+    private String readSharedPref(String key){
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        return sharedPref.getString(key,"");
+    }
+
+    private void dailyTask(){
+        int time = (int) TimeUnit.DAYS.toSeconds(1);
+
+        SQLiteCRUD database = new SQLiteCRUD(this);
+        database.openDatabase();
+        List<PhoneUsage> appUsage = getAppUsage(time);
+        if (!appUsage.isEmpty()) {
+            for (PhoneUsage pu : appUsage) {
+                database.createPhoneUsage(pu);
+            }
+        }
+
+        List<PhoneUsage> callHistory = getCallHistory(time);
+        if (callHistory != null) {
+            for (PhoneUsage pu : callHistory) {
+                database.createPhoneUsage(pu);
+            }
+        }
+
+
+        database.closeDatabase();
+
+        //Update Last upload time
+        writeSharedPref(LAST_UPLOAD_TIME,Long.toString(System.currentTimeMillis()));
+
+        FileOutputStream test = null;
+        try {
+            test = openFileOutput("test", Context.MODE_PRIVATE);
+        } catch (FileNotFoundException e) {
+        }
+
+        try {
+            test.write(extractDailyData(context).getBytes());
+        } catch (IOException e) {
+        }
     }
 
     //get app usage from s seconds ago to now
@@ -204,8 +255,10 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
         am.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + s * 1000, alarmIntent);
     }
 
-    private String extractAllData(Context context) {
+    private String extractDailyData(Context context) {
         String[] s = new String[4];
+
+
 
         SQLiteCRUD database = new SQLiteCRUD(context);
         database.openDatabase();
@@ -294,17 +347,37 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
     public void onConnected(@Nullable Bundle bundle) {
         Log.e("getLocation","onConnected");
         if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            Log.e("getLocation","Permission Fail");
             return;
-        }
+        }else{Log.e("getLocation","Permission OK");}
+
         Location location = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
         if (location != null) {
+
+            //No need to insert record when the last known location did not change
+            if (existSharedPref(LAST_LOCATION_TIME)){
+                if(location.getTime() <= Long.parseLong(readSharedPref(LAST_LOCATION_TIME))){
+                    Log.e("GetLocation","Repeated");
+                    stopSelf();
+                }
+            }
+
+
             SQLiteCRUD database = new SQLiteCRUD(this);
             database.openDatabase();
             LocationRecord locationRecord = new LocationRecord(location.getTime(),(float)location.getLatitude(),(float)location.getLongitude());
             database.createLocationRecord(locationRecord);
             Log.e("getLocation", locationRecord.getRecordTime() + " " + locationRecord.getLatitude() + " " + locationRecord.getLongitude());
+
+            //Update SharedPref
+            writeSharedPref(LAST_LOCATION_TIME,Long.toString(location.getTime()));
             database.closeDatabase();
         }
+        else{
+            Log.e("getLocation","Location NULL");
+        }
+
+        stopSelf();
     }
 
     @Override
