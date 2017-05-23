@@ -5,22 +5,22 @@ package hk.ust.alzheimerpassivemonitoring;
  */
 
 public class StepDistance {
-    private String date;        //YYYYMMDD
+    private long date;
     private int step;
     private float distance;
 
 
-    public StepDistance(String date, int step, float distance) {
+    public StepDistance(long date, int step, float distance) {
         this.date = date;
         this.step = step;
         this.distance = distance;
     }
 
-    public String getDate() {
+    public long getDate() {
         return date;
     }
 
-    public void setDate(String date) {
+    public void setDate(long date) {
         this.date = date;
     }
 

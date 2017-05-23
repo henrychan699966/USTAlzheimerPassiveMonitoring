@@ -15,7 +15,7 @@ public class SQLiteHelper extends SQLiteOpenHelper{
     private static final int version = 1;
 
     private static final String CREATE_TABLE_StepDistance =
-            "CREATE TABLE StepDistance (Date CHARACTER(8) PRIMARY KEY, Step INTEGER, Distance REAL);";
+            "CREATE TABLE StepDistance (Date BIGINT PRIMARY KEY, Step INTEGER, Distance REAL);";
     private static final String CREATE_TABLE_LocationRecord =
             "CREATE TABLE LocationRecord (RecordTime BIGINT PRIMARY KEY, Latitude REAL, Longitude REAL);";
     private static final String CREATE_TABLE_PhoneUsage =

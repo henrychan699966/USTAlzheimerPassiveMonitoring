@@ -51,7 +51,7 @@ public class SQLiteCRUD {
 
     public List<StepDistance> readStepDistance(String date){
 
-        Cursor cursor = db.query("StepDistance",null,"Date = " + date, null, null, null, null);
+        Cursor cursor = db.query("StepDistance",null,"Date > " + dateToEpoch(date) + " and Date < " + (dateToEpoch(date)+ TimeUnit.DAYS.toMillis(1)), null, null, null, null);
         if(cursor.getCount() > 0){
             cursor.moveToFirst();
         }
@@ -59,7 +59,7 @@ public class SQLiteCRUD {
 
         List<StepDistance> records = new ArrayList<>();
         while(!cursor.isAfterLast()){
-            StepDistance sd = new StepDistance(cursor.getString(0),cursor.getInt(1),cursor.getFloat(2));
+            StepDistance sd = new StepDistance(cursor.getLong(0),cursor.getInt(1),cursor.getFloat(2));
             records.add(sd);
             cursor.moveToNext();
         }
@@ -68,8 +68,8 @@ public class SQLiteCRUD {
         return records;
     }
 
-    public List<StepDistance> readAllStepDistance(){
-        Cursor cursor = db.query("StepDistance",null,null, null, null, null, null);
+    public List<StepDistance> readAllStepDistance(String date){
+        Cursor cursor = db.query("StepDistance",null,"Date > " + dateToEpoch(date), null, null, null, null);
         if(cursor.getCount() > 0){
             cursor.moveToFirst();
         }
@@ -77,7 +77,7 @@ public class SQLiteCRUD {
 
         List<StepDistance> records = new ArrayList<>();
         while (!cursor.isAfterLast()) {
-            StepDistance sd = new StepDistance(cursor.getString(0),cursor.getInt(1),cursor.getFloat(2));
+            StepDistance sd = new StepDistance(cursor.getLong(0),cursor.getInt(1),cursor.getFloat(2));
             records.add(sd);
             cursor.moveToNext();
         }
@@ -243,5 +243,14 @@ public class SQLiteCRUD {
         }
 
         return d.getTime();
+    }
+
+
+    public void achieveDatabase(String date){
+        db.delete("StepDistance","Date < " + (dateToEpoch(date)+ TimeUnit.DAYS.toMillis(1)),null);
+        db.delete("LocationRecord","RecordTime < " + (dateToEpoch(date)+ TimeUnit.DAYS.toMillis(1)),null);
+        db.delete("PhoneUsage","StartTime < " + (dateToEpoch(date)+ TimeUnit.DAYS.toMillis(1)),null);
+        db.delete("SleepWakeCycle","StartTime < " + (dateToEpoch(date)+ TimeUnit.DAYS.toMillis(1)),null);
+
     }
 }
