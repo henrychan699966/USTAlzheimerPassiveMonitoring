@@ -15,6 +15,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.LineChart;
@@ -39,6 +40,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 public class GraphPlotter extends AppCompatActivity {
@@ -47,6 +49,8 @@ public class GraphPlotter extends AppCompatActivity {
     private ViewPager mViewPager;
     private SQLiteCRUD database;
     private List<PhoneUsage> phoneUsageRecord;
+    private String startingDate;
+    private String endingDate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +69,18 @@ public class GraphPlotter extends AppCompatActivity {
         database.openDatabase();
         phoneUsageRecord = database.readPhoneUsage("20170426");
         database.closeDatabase();
+
+        EditText startDateText = (EditText) findViewById(R.id.startDate);
+        EditText endDateText = (EditText) findViewById(R.id.endDate);
+
+        SimpleDateFormat mFormat = new SimpleDateFormat("yyyyMMdd");
+        mFormat.setTimeZone(TimeZone.getDefault());
+
+        startingDate = mFormat.format(new Date());
+        endingDate = startingDate;
+
+        startDateText.setText(startingDate);
+        endDateText.setText(endingDate);
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
@@ -279,18 +295,33 @@ public class GraphPlotter extends AppCompatActivity {
 
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
+        private final int NUM_OF_FRAGMENT = 3;
+
         public SectionsPagerAdapter(FragmentManager fm) {
             super(fm);
         }
 
         @Override
         public Fragment getItem(int position) {
-            return GraphFragment.newInstance(position + 1, phoneUsageRecord);
+
+            EditText startDateText = (EditText) findViewById(R.id.startDate);
+            EditText endDateText = (EditText) findViewById(R.id.endDate);
+
+            switch (position) {
+                case 0:
+                    return PhoneUsageFragment.newInstance(startDateText.getText().toString(), endDateText.getText().toString());
+                case 1:
+                    return new StepDistanceFragment();
+                case 2:
+                    return new SleepWakeCycleFragment();
+                default:
+            }
+            return null;
         }
 
         @Override
         public int getCount() {
-            return 3;
+            return NUM_OF_FRAGMENT;
         }
 
         @Override

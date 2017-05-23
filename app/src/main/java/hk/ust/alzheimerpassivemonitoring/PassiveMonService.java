@@ -1,6 +1,7 @@
 package hk.ust.alzheimerpassivemonitoring;
 
 import android.Manifest;
+import android.annotation.TargetApi;
 import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -14,6 +15,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.location.Location;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.IBinder;
@@ -259,7 +261,6 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
         String[] s = new String[4];
 
 
-
         SQLiteCRUD database = new SQLiteCRUD(context);
         database.openDatabase();
 
@@ -269,7 +270,7 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
 
         type = new TypeToken<List<StepDistance>>() {
         }.getType();
-        s[1] = new Gson().toJson(database.readAllStepDistance(), type);
+        s[1] = new Gson().toJson(database.readAllStepDistance(""), type);
 
         type = new TypeToken<List<LocationRecord>>() {
         }.getType();
@@ -341,7 +342,6 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
         cursor.close();
         return null;
     }
-
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
