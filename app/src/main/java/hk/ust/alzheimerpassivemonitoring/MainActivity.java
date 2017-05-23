@@ -1,11 +1,13 @@
 package hk.ust.alzheimerpassivemonitoring;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.AppOpsManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.provider.Settings;
@@ -16,12 +18,18 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.fitbit.authentication.AuthenticationHandler;
+import com.fitbit.authentication.AuthenticationManager;
+import com.fitbit.authentication.AuthenticationResult;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, AuthenticationHandler {
 
     private static final int PERMISSIONS_REQUEST_READ_CALL_LOG = 200;
     private static final int PERMISSION_REQUEST_PACKAGE_USAGE_STATS = 100;
     private static final int PERMISSION_REQUEST_FINE_LOCATION = 300;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,6 +49,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION},PERMISSION_REQUEST_FINE_LOCATION);
             }
+        }
+
+
+        if (!AuthenticationManager.isLoggedIn()) {
+            AuthenticationManager.login(this);
         }
 
 
@@ -82,4 +95,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             default:
         }
     }
+
+    @Override
+    public void onAuthFinished(AuthenticationResult result) {
+
+    }
+
 }
