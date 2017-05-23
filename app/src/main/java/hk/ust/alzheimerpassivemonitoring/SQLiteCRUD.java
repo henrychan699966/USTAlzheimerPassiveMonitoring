@@ -68,8 +68,8 @@ public class SQLiteCRUD {
         return records;
     }
 
-    public List<StepDistance> readAllStepDistance(String date){
-        Cursor cursor = db.query("StepDistance",null,"Date > " + dateToEpoch(date), null, null, null, null);
+    public List<StepDistance> readAllStepDistance(long date){
+        Cursor cursor = db.query("StepDistance",null,"Date > " + date, null, null, null, null);
         if(cursor.getCount() > 0){
             cursor.moveToFirst();
         }
