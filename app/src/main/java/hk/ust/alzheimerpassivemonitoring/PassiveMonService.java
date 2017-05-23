@@ -269,7 +269,7 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
 
         type = new TypeToken<List<StepDistance>>() {
         }.getType();
-        s[1] = new Gson().toJson(database.readAllStepDistance(), type);
+        s[1] = new Gson().toJson(database.readAllStepDistance(0), type);
 
         type = new TypeToken<List<LocationRecord>>() {
         }.getType();
@@ -299,7 +299,7 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
 
         JsonObject output = new JsonObject();
         output.add("data", data);
-        output.addProperty("PhoneNum", "12345678");
+        output.addProperty("UserID", "12345678");
 
         return new Gson().toJson(output);
     }
