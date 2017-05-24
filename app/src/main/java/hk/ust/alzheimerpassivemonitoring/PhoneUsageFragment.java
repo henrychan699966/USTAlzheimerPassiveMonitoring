@@ -73,7 +73,7 @@ public class PhoneUsageFragment extends Fragment {
         mChart.setCenterText("Phone Usage");
         mChart.setUsePercentValues(true);
         mChart.setRotationEnabled(false);
-        mChart.setData(generatePhoneUsageData());
+        mChart.setData(generatePhoneUsageData(startingDate, endingDate));
         mChart.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
             @Override
             public void onValueSelected(Entry e, Highlight h) {
@@ -94,7 +94,7 @@ public class PhoneUsageFragment extends Fragment {
         return rootView;
     }
 
-    PieData generatePhoneUsageData() {
+    PieData generatePhoneUsageData(String s, String e) {
 
         String[] socialApp = {"WhatsApp = 150min", "FaceBook = 150min"};
         String[] others = {"Game = 110min"};
@@ -148,7 +148,7 @@ public class PhoneUsageFragment extends Fragment {
     public void updateDate(String s, String e) {
         startingDate = s;
         endingDate = e;
-        mChart.setData(generatePhoneUsageData());
+        mChart.setData(generatePhoneUsageData(startingDate, endingDate));
         mChart.notifyDataSetChanged();
         mChart.invalidate();
     }

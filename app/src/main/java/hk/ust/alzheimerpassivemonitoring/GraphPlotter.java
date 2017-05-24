@@ -18,6 +18,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.LineChart;
@@ -87,6 +88,25 @@ public class GraphPlotter extends AppCompatActivity implements View.OnClickListe
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
+        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                int position = tab.getPosition();
+                switch (position) {
+                    case 2:
+                        showItem(false);
+                        break;
+                    default:
+                        showItem(true);
+                }
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {}
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {}
+        });
 
         ImageButton refreshButton = (ImageButton) findViewById(R.id.refreshButton);
         refreshButton.setOnClickListener(this);
@@ -129,7 +149,7 @@ public class GraphPlotter extends AppCompatActivity implements View.OnClickListe
         } else if (endDateMillis-startDateMillis > MAX_DAY) {
             showToast("Error in interval length");
             return false;
-        } else if (TimeUnit.MILLISECONDS.toDays(new Date().getTime())-endDateMillis>=MIN_INTERVAL) {
+        } else if (-TimeUnit.MILLISECONDS.toDays(new Date().getTime())-endDateMillis>=MIN_INTERVAL) {
             showToast("Error in end date");
             return false;
         }
@@ -260,7 +280,7 @@ public class GraphPlotter extends AppCompatActivity implements View.OnClickListe
             } else if (object instanceof StepDistanceFragment) {
                 ((StepDistanceFragment) object).updateDate(startingDate, endingDate);
             } else if (object instanceof SleepWakeCycleFragment) {
-                ((SleepWakeCycleFragment) object).updateDate(startingDate, endingDate);
+                ((SleepWakeCycleFragment) object).updateDate(startingDate);
             }
             return super.getItemPosition(object);
         }
@@ -287,5 +307,17 @@ public class GraphPlotter extends AppCompatActivity implements View.OnClickListe
 
     public void showToast(String str) {
         Toast.makeText(this, str, Toast.LENGTH_SHORT).show();
+    }
+
+    private void showItem (boolean visible) {
+        TextView t = (TextView) findViewById(R.id.t1);
+        EditText e = (EditText) findViewById(R.id.endDate);
+        if (visible) {
+            t.setVisibility(View.VISIBLE);
+            e.setVisibility(View.VISIBLE);
+        } else {
+            t.setVisibility(View.INVISIBLE);
+            e.setVisibility(View.INVISIBLE);
+        }
     }
 }

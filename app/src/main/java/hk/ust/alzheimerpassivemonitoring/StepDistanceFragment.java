@@ -138,6 +138,7 @@ public class StepDistanceFragment extends Fragment {
     private int getDailyStep (String date) {
         int totalStep = 0;
         List<StepDistance> stepList = database.readStepDistance(date);
+        if (stepList == null) return 0;
         for (int i = 0; i < stepList.size(); i++) {
             totalStep += stepList.get(i).getStep();
         }
@@ -146,9 +147,10 @@ public class StepDistanceFragment extends Fragment {
 
     private float getDailyDistance (String date) {
         int totalDistance = 0;
-        List<StepDistance> stepList = database.readStepDistance(date);
-        for (int i = 0; i < stepList.size(); i++) {
-            totalDistance += stepList.get(i).getDistance();
+        List<StepDistance> distanceList = database.readStepDistance(date);
+        if (distanceList == null) return 0;
+        for (int i = 0; i < distanceList.size(); i++) {
+            totalDistance += distanceList.get(i).getDistance();
         }
         return totalDistance;
     }

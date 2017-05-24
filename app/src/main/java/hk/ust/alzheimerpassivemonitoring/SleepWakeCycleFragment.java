@@ -2,10 +2,8 @@ package hk.ust.alzheimerpassivemonitoring;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,24 +23,21 @@ import com.github.mikephil.charting.utils.ColorTemplate;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
-
 public class SleepWakeCycleFragment extends Fragment {
 
     private static final String START_DATE = "start_date";
-    private static final String END_DATE = "end_date";
     private static final String[] SLEEP_CYCLE = {"deep","light","rem","wake"};
 
     private SQLiteCRUD database;
     private List<SleepWakeCycle> sleepWakeCycleRecord;
 
     private String startingDate;
-    private String endingDate;
 
     private LineChart mChart;
 
@@ -54,7 +49,6 @@ public class SleepWakeCycleFragment extends Fragment {
         SleepWakeCycleFragment fragment = new SleepWakeCycleFragment();
         Bundle args = new Bundle();
         args.putString(START_DATE, startDate);
-        args.putString(END_DATE, endDate);
         fragment.setArguments(args);
         return fragment;
     }
@@ -64,7 +58,6 @@ public class SleepWakeCycleFragment extends Fragment {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             startingDate = getArguments().getString(START_DATE);
-            endingDate = getArguments().getString(END_DATE);
         }
     }
 
@@ -86,6 +79,7 @@ public class SleepWakeCycleFragment extends Fragment {
                 return mFormat.format(new Date(millis));
             }
         });
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         xAxis.setGranularity(1);
 
         LimitLine ll1 = new LimitLine(0f, "Deep");
@@ -116,31 +110,19 @@ public class SleepWakeCycleFragment extends Fragment {
         mChart.getAxisLeft().addLimitLine(ll2);
         mChart.getAxisLeft().addLimitLine(ll3);
         mChart.getAxisLeft().addLimitLine(ll4);
-        mChart.setData(generateSleepWakeData(startingDate, endingDate));
+        mChart.setData(generateSleepWakeData(startingDate));
 
         return rootView;
     }
 
-    LineData generateSleepWakeData(String s, String e) {
+    LineData generateSleepWakeData(String s) {
 
         ArrayList<Entry> swValues = new ArrayList<>();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
         sdf.setTimeZone(TimeZone.getDefault());
-        long startDateMillis = 0;
-        long endDateMillis = 0;
-        try {
-            Date startDate = sdf.parse(s);
-            Date endDate = sdf.parse(e);
-            startDateMillis = TimeUnit.MILLISECONDS.toDays(startDate.getTime());
-            endDateMillis = TimeUnit.MILLISECONDS.toDays(endDate.getTime());
-        } catch (ParseException e1) {
-            e1.printStackTrace();
-        }
 
-        for (float x = startDateMillis; x <= endDateMillis; x++) {
-            String currentDate = sdf.format(x);
-            swValues.addAll(getDailySleepWake(currentDate));
-        }
+        swValues.add(new Entry(0, 3));
+        swValues.addAll(getDailySleepWake(s));
 
         LineDataSet set1 = new LineDataSet(swValues, "Sleep-Wake ");
         set1.setAxisDependency(YAxis.AxisDependency.LEFT);
@@ -163,6 +145,7 @@ public class SleepWakeCycleFragment extends Fragment {
     private ArrayList<Entry> getDailySleepWake(String date) {
         ArrayList<Entry> a = new ArrayList<>();
         List<SleepWakeCycle> swList = database.readSleepWakeCycle(date);
+        if (swList == null) return a;
         for (int i = 0; i < swList.size(); i++) {
             long start = TimeUnit.MILLISECONDS.toSeconds(swList.get(i).getStartTime());
             long end = TimeUnit.MILLISECONDS.toSeconds(swList.get(i).getEndTime())-1;
@@ -196,10 +179,9 @@ public class SleepWakeCycleFragment extends Fragment {
         database.closeDatabase();
     }
 
-    public void updateDate(String s, String e) {
+    public void updateDate(String s) {
         startingDate = s;
-        endingDate = e;
-        mChart.setData(generateSleepWakeData(startingDate, endingDate));
+        mChart.setData(generateSleepWakeData(startingDate));
         mChart.notifyDataSetChanged();
         mChart.invalidate();
     }
