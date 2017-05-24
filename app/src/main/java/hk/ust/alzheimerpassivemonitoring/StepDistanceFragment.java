@@ -104,11 +104,10 @@ public class StepDistanceFragment extends Fragment {
                 return mFormat.format(value) + " km";
             }
         });
-
         mChart.setData(generateStepDistanceData(startingDate, endingDate));
-
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         xAxis.setCenterAxisLabels(true);
+        xAxis.setGranularity(1f);
         Legend l = mChart.getLegend();
         l.setTextSize(8f);
 
@@ -182,6 +181,7 @@ public class StepDistanceFragment extends Fragment {
         startingDate = s;
         endingDate = e;
         mChart.setData(generateStepDistanceData(startingDate, endingDate));
+        mChart.setVisibleXRangeMaximum(10f);
         mChart.notifyDataSetChanged();
         mChart.invalidate();
     }
