@@ -136,7 +136,7 @@ public class GraphPlotter extends AppCompatActivity implements View.OnClickListe
         } else if (endDateMillis-startDateMillis > MAX_DAY) {
             showToast("Error in interval length");
             return false;
-        } else if (-TimeUnit.MILLISECONDS.toDays(new Date().getTime())-endDateMillis>=MIN_INTERVAL) {
+        } else if (TimeUnit.MILLISECONDS.toDays(new Date().getTime())-endDateMillis<MIN_INTERVAL) {
             showToast("Error in end date");
             return false;
         }
