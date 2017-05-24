@@ -111,18 +111,18 @@ public class StepDistanceFragment extends Fragment {
 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
         sdf.setTimeZone(TimeZone.getDefault());
-        long startDateMillis = 0;
-        long endDateMillis = 0;
+        long startDateDay = 0;
+        long endDateDay = 0;
         try {
             Date startDate = sdf.parse(s);
             Date endDate = sdf.parse(e);
-            startDateMillis = TimeUnit.MILLISECONDS.toDays(startDate.getTime());
-            endDateMillis = TimeUnit.MILLISECONDS.toDays(endDate.getTime());
+            startDateDay = TimeUnit.MILLISECONDS.toDays(startDate.getTime());
+            endDateDay = TimeUnit.MILLISECONDS.toDays(endDate.getTime());
         } catch (ParseException e1) {
             e1.printStackTrace();
         }
 
-        for (float x = startDateMillis; x <= endDateMillis; x++) {
+        for (float x = startDateDay; x <= endDateDay; x++) {
             String currentDate = sdf.format(TimeUnit.DAYS.toMillis(((long) x)));
             stepValues.add(new BarEntry(x, getDailyStep(currentDate)));
             distanceValues.add(new BarEntry(x, getDailyDistance(currentDate)));

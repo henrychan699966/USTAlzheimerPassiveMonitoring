@@ -113,12 +113,12 @@ public class PhoneUsageFragment extends Fragment {
                 for (PhoneUsage ap : pu) {
                     if (!nameList.contains(ap.getActivity())) {
                         nameList.add(ap.getActivity());
-                        durationList.add(ap.getStartTime() - ap.getEndTime());
+                        durationList.add(ap.getEndTime() - ap.getStartTime());
                     } else {
                         int index = nameList.indexOf(ap.getActivity());
-                        durationList.add(index,durationList.get(index) + ap.getStartTime() - ap.getEndTime());
+                        durationList.add(index,durationList.get(index) - ap.getStartTime() + ap.getEndTime());
                     }
-                    totalDur += ap.getStartTime() - ap.getEndTime();
+                    totalDur += (ap.getEndTime() - ap.getStartTime());
                 }
             }
         }
