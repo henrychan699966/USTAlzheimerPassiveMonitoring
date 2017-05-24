@@ -157,7 +157,7 @@ public class SleepWakeCycleFragment extends Fragment {
         long ref = 0;
         try {
             Date startDate = sdf.parse(date);
-            ref = TimeUnit.MILLISECONDS.toDays(startDate.getTime());
+            ref = startDate.getTime();
         } catch (ParseException e1) {
             e1.printStackTrace();
         }
@@ -165,8 +165,8 @@ public class SleepWakeCycleFragment extends Fragment {
         List<SleepWakeCycle> swList = database.readSleepWakeCycle(date);
         if (swList == null) return a;
         for (int i = 0; i < swList.size(); i++) {
-            long start = TimeUnit.MILLISECONDS.toSeconds(swList.get(i).getStartTime()-ref);
-            long end = TimeUnit.MILLISECONDS.toSeconds(swList.get(i).getEndTime()-ref)-1;
+            long start = swList.get(i).getStartTime()-ref;
+            long end = swList.get(i).getEndTime()-ref-TimeUnit.MILLISECONDS.toSeconds(1);
             a.add(new Entry(start, convertSleepStage(swList.get(i).getSleepStage())));
             a.add(new Entry(end, convertSleepStage(swList.get(i).getSleepStage())));
         }
