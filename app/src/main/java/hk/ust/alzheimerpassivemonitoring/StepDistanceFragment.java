@@ -23,7 +23,6 @@ import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.github.mikephil.charting.utils.ColorTemplate;
 
-import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -150,12 +149,12 @@ public class StepDistanceFragment extends Fragment {
             set1 = new BarDataSet(stepValues, "Step ");
             set1.setAxisDependency(YAxis.AxisDependency.LEFT);
             set1.setColor(Color.BLUE);
-            set1.setDrawValues(true);
+            set1.setDrawValues(false);
 
             set2 = new BarDataSet(distanceValues, "Distance ");
             set2.setAxisDependency(YAxis.AxisDependency.RIGHT);
             set2.setColor(Color.GREEN);
-            set2.setDrawValues(true);
+            set2.setDrawValues(false);
 
             BarData data = new BarData(set1, set2);
             data.setValueTextColor(Color.GRAY);
