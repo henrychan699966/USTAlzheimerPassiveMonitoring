@@ -23,6 +23,7 @@ import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.github.mikephil.charting.utils.ColorTemplate;
 
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -95,6 +96,14 @@ public class StepDistanceFragment extends Fragment {
                 return mFormat.format(new Date(millis));
             }
         });
+        mChart.getAxisRight().setValueFormatter(new IAxisValueFormatter() {
+            private DecimalFormat mFormat = new DecimalFormat("##.###");
+            @Override
+            public String getFormattedValue(float value, AxisBase axis) {
+                return mFormat.format(value) + " km";
+            }
+        });
+
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         generateStepDistanceData(startingDate, endingDate);
 
@@ -141,21 +150,21 @@ public class StepDistanceFragment extends Fragment {
             set1 = new BarDataSet(stepValues, "Step ");
             set1.setAxisDependency(YAxis.AxisDependency.LEFT);
             set1.setColor(Color.BLUE);
-            set1.setDrawValues(false);
+            set1.setDrawValues(true);
 
             set2 = new BarDataSet(distanceValues, "Distance ");
             set2.setAxisDependency(YAxis.AxisDependency.RIGHT);
             set2.setColor(Color.GREEN);
-            set2.setDrawValues(false);
+            set2.setDrawValues(true);
 
             BarData data = new BarData(set1, set2);
             data.setValueTextColor(Color.GRAY);
             data.setValueTextSize(9f);
             data.setBarWidth(0.4f);
 
-            mChart.groupBars(0.1f,0.08f,0.06f);
             mChart.setData(data);
         }
+        mChart.groupBars(0.1f,0.08f,0.06f);
         mChart.invalidate();
     }
 
@@ -168,7 +177,7 @@ public class StepDistanceFragment extends Fragment {
     private float getDailyDistance (String date) {
         List<StepDistance> distanceList = database.readStepDistance(date);
         if (distanceList == null) return 0;
-        return distanceList.get(0).getStep();
+        return distanceList.get(0).getDistance();
     }
 
     @Override
