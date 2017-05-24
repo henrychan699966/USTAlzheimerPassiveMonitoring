@@ -68,6 +68,7 @@ public class PhoneUsageFragment extends Fragment {
         phoneUsageRecord = database.readPhoneUsage(endingDate);
 
         mChart = (PieChart) rootView.findViewById(R.id.puchart);
+        mChart.getDescription().setEnabled(false);
         mChart.setCenterText("Phone Usage");
         mChart.setUsePercentValues(true);
         mChart.setRotationEnabled(false);

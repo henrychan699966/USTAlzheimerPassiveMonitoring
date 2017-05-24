@@ -73,7 +73,7 @@ public class SleepWakeCycleFragment extends Fragment {
             private SimpleDateFormat mFormat = new SimpleDateFormat("HH:mm");
             @Override
             public String getFormattedValue(float value, AxisBase axis) {
-
+                mFormat.setTimeZone(TimeZone.getDefault());
                 long millis = TimeUnit.HOURS.toMillis((long) value);
                 return mFormat.format(new Date(millis));
             }
