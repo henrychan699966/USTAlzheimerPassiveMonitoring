@@ -95,8 +95,16 @@ public class StepDistanceFragment extends Fragment {
                 return mFormat.format(new Date(millis));
             }
         });
+        mChart.getAxisRight().setValueFormatter(new IAxisValueFormatter() {
+            private DecimalFormat mFormat = new DecimalFormat("##.###");
+            @Override
+            public String getFormattedValue(float value, AxisBase axis) {
+                return mFormat.format(value) + " km";
+            }
+        });
+
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-        mChart.setData(generateStepDistanceData(startingDate, endingDate));
+        generateStepDistanceData(startingDate, endingDate);
 
         Legend l = mChart.getLegend();
         l.setTextSize(8f);
@@ -104,69 +112,71 @@ public class StepDistanceFragment extends Fragment {
         return rootView;
     }
 
-    BarData generateStepDistanceData(String s, String e) {
+    void generateStepDistanceData(String s, String e) {
 
         ArrayList<BarEntry> stepValues = new ArrayList<>();
         ArrayList<BarEntry> distanceValues = new ArrayList<>();
 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
         sdf.setTimeZone(TimeZone.getDefault());
-        long startDateMillis = 0;
-        long endDateMillis = 0;
+        long startDateDay = 0;
+        long endDateDay = 0;
         try {
             Date startDate = sdf.parse(s);
             Date endDate = sdf.parse(e);
-            startDateMillis = TimeUnit.MILLISECONDS.toDays(startDate.getTime());
-            endDateMillis = TimeUnit.MILLISECONDS.toDays(endDate.getTime());
+            startDateDay = TimeUnit.MILLISECONDS.toDays(startDate.getTime());
+            endDateDay = TimeUnit.MILLISECONDS.toDays(endDate.getTime());
         } catch (ParseException e1) {
             e1.printStackTrace();
         }
 
-        for (float x = startDateMillis; x <= endDateMillis; x++) {
-            String currentDate = sdf.format(x);
+        for (long x = startDateDay; x <= endDateDay; x++) {
+            String currentDate = sdf.format(TimeUnit.DAYS.toMillis((x)));
             stepValues.add(new BarEntry(x, getDailyStep(currentDate)));
             distanceValues.add(new BarEntry(x, getDailyDistance(currentDate)));
         }
 
         BarDataSet set1, set2;
-        set1 = new BarDataSet(stepValues, "Step ");
-        set1.setAxisDependency(YAxis.AxisDependency.LEFT);
-        set1.setColor(Color.BLUE);
-        set1.setValueTextColor(ColorTemplate.getHoloBlue());
-        set1.setDrawValues(false);
 
-        set2 = new BarDataSet(distanceValues, "Distance ");
-        set2.setAxisDependency(YAxis.AxisDependency.LEFT);
-        set2.setColor(Color.GREEN);
-        set2.setValueTextColor(ColorTemplate.getHoloBlue());
-        set2.setDrawValues(false);
+        if (mChart.getData() != null && mChart.getData().getDataSetCount() > 0) {
+            set1 = (BarDataSet) mChart.getData().getDataSetByIndex(0);
+            set2 = (BarDataSet) mChart.getData().getDataSetByIndex(1);
+            set1.setValues(stepValues);
+            set2.setValues(distanceValues);
+            mChart.getData().notifyDataChanged();
+            mChart.notifyDataSetChanged();
+        } else {
+            set1 = new BarDataSet(stepValues, "Step ");
+            set1.setAxisDependency(YAxis.AxisDependency.LEFT);
+            set1.setColor(Color.BLUE);
+            set1.setDrawValues(false);
 
-        BarData data = new BarData(set1, set2);
-        data.groupBars(0f,0.15f,0.01f);
-        data.setValueTextColor(Color.WHITE);
-        data.setValueTextSize(9f);
+            set2 = new BarDataSet(distanceValues, "Distance ");
+            set2.setAxisDependency(YAxis.AxisDependency.RIGHT);
+            set2.setColor(Color.GREEN);
+            set2.setDrawValues(false);
 
-        return data;
+            BarData data = new BarData(set1, set2);
+            data.setValueTextColor(Color.GRAY);
+            data.setValueTextSize(9f);
+            data.setBarWidth(0.4f);
+
+            mChart.setData(data);
+        }
+        mChart.groupBars(0.1f,0.08f,0.06f);
+        mChart.invalidate();
     }
 
     private int getDailyStep (String date) {
-        int totalStep = 0;
         List<StepDistance> stepList = database.readStepDistance(date);
         if (stepList == null) return 0;
-        for (int i = 0; i < stepList.size(); i++) {
-            totalStep += stepList.get(i).getStep();
-        }
-        return totalStep;
+        return stepList.get(0).getStep();
     }
 
     private float getDailyDistance (String date) {
-        int totalDistance = 0;
         List<StepDistance> distanceList = database.readStepDistance(date);
         if (distanceList == null) return 0;
-        for (int i = 0; i < distanceList.size(); i++) {
-            totalDistance += distanceList.get(i).getDistance();
-        }
-        return totalDistance;
+        return distanceList.get(0).getDistance();
     }
 
     @Override
@@ -185,7 +195,7 @@ public class StepDistanceFragment extends Fragment {
     public void updateDate(String s, String e) {
         startingDate = s;
         endingDate = e;
-        mChart.setData(generateStepDistanceData(startingDate, endingDate));
+        generateStepDistanceData(startingDate, endingDate);
         mChart.notifyDataSetChanged();
         mChart.invalidate();
     }
