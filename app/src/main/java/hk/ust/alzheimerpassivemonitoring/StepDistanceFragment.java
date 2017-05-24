@@ -1,5 +1,6 @@
 package hk.ust.alzheimerpassivemonitoring;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -8,6 +9,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ListView;
+import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.components.AxisBase;
@@ -17,7 +20,10 @@ import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.formatter.IAxisValueFormatter;
+import com.github.mikephil.charting.highlight.Highlight;
+import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.github.mikephil.charting.utils.ColorTemplate;
 
 import java.text.ParseException;
@@ -71,6 +77,17 @@ public class StepDistanceFragment extends Fragment {
 
         mChart = (BarChart) rootView.findViewById(R.id.sdchart);
         mChart.getDescription().setEnabled(false);
+        mChart.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
+            @Override
+            public void onValueSelected(Entry e, Highlight h) {
+                if (e == null) return;
+                Toast.makeText(getContext(), "\""+e.getY()+"\"", Toast.LENGTH_SHORT).show();
+            }
+            @Override
+            public void onNothingSelected() {
+            }
+        });
+
         XAxis xAxis = mChart.getXAxis();
         xAxis.setValueFormatter(new IAxisValueFormatter() {
             private SimpleDateFormat mFormat = new SimpleDateFormat("dd-MM");
@@ -160,12 +177,6 @@ public class StepDistanceFragment extends Fragment {
         super.onAttach(context);
         database = new SQLiteCRUD(context);
         database.openDatabase();
-//        if (context instanceof OnFragmentInteractionListener) {
-//            mListener = (OnFragmentInteractionListener) context;
-//        } else {
-//            throw new RuntimeException(context.toString()
-//                    + " must implement OnFragmentInteractionListener");
-//        }
     }
 
     @Override

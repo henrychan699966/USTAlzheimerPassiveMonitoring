@@ -1,19 +1,24 @@
 package hk.ust.alzheimerpassivemonitoring;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.components.Legend;
+import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
@@ -23,8 +28,13 @@ import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.github.mikephil.charting.utils.ColorTemplate;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
 
 public class PhoneUsageFragment extends Fragment {
 
@@ -65,7 +75,7 @@ public class PhoneUsageFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View rootView = inflater.inflate(R.layout.fragment_phone_usage, container, false);
+        final View rootView = inflater.inflate(R.layout.fragment_phone_usage, container, false);
 
         phoneUsageRecord = database.readPhoneUsage(endingDate);
 
@@ -74,14 +84,7 @@ public class PhoneUsageFragment extends Fragment {
         mChart.setUsePercentValues(true);
         mChart.setRotationEnabled(false);
         mChart.setData(generatePhoneUsageData(startingDate, endingDate));
-        mChart.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
-            @Override
-            public void onValueSelected(Entry e, Highlight h) {
-            }
-            @Override
-            public void onNothingSelected() {
-            }
-        });
+
         Legend l = mChart.getLegend();
         l.setVerticalAlignment(Legend.LegendVerticalAlignment.TOP);
         l.setHorizontalAlignment(Legend.LegendHorizontalAlignment.RIGHT);
@@ -96,15 +99,48 @@ public class PhoneUsageFragment extends Fragment {
 
     PieData generatePhoneUsageData(String s, String e) {
 
-        String[] socialApp = {"WhatsApp = 150min", "FaceBook = 150min"};
-        String[] others = {"Game = 110min"};
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+        sdf.setTimeZone(TimeZone.getDefault());
+        long startDateMillis = 0;
+        long endDateMillis = 0;
+        try {
+            Date startDate = sdf.parse(s);
+            Date endDate = sdf.parse(e);
+            startDateMillis = TimeUnit.MILLISECONDS.toDays(startDate.getTime());
+            endDateMillis = TimeUnit.MILLISECONDS.toDays(endDate.getTime());
+        } catch (ParseException e1) {
+            e1.printStackTrace();
+        }
+
+        long totalSeconds = TimeUnit.DAYS.toSeconds((endDateMillis-startDateMillis+1));
+        long totalDur = 0;
+        ArrayList<String> nameList = new ArrayList<>();
+        ArrayList<Long> durationList = new ArrayList<>();
+
+        for (float x = startDateMillis; x <= endDateMillis; x++) {
+            String currentDate = sdf.format(x);
+            List<PhoneUsage> pu = database.readPhoneUsage(currentDate);
+            for (PhoneUsage ap : pu) {
+                if (!nameList.contains(ap.getActivity())) {
+                    nameList.add(ap.getActivity());
+                    durationList.add(ap.getStartTime() - ap.getEndTime());
+                } else {
+                    int index = nameList.indexOf(ap.getActivity());
+                    durationList.add(index,durationList.get(index) + ap.getStartTime() - ap.getEndTime());
+                }
+                totalDur += ap.getStartTime() - ap.getEndTime();
+            }
+        }
+        totalDur = TimeUnit.MILLISECONDS.toSeconds(totalDur);
+        nameList.add("ScreenOff");
+        durationList.add(totalSeconds - totalDur);
 
         ArrayList<PieEntry> entries = new ArrayList<>();
-        entries.add(new PieEntry(1000, "Screen Off"));
-        entries.add(new PieEntry(30, "Phone Calls"));
-        entries.add(new PieEntry(300, "Social Apps", socialApp));
-        entries.add(new PieEntry(110, "Others", others));
 
+        for (int i = 0; i < nameList.size(); i++) {
+            entries.add(new PieEntry(TimeUnit.MILLISECONDS.toSeconds(durationList.get(i)),nameList.get(i)));
+        }
+        
 //        for (PhoneUsage aP : p) {
 //            entries.add(new PieEntry(aP.getStartTime() - aP.getEndTime(), aP.getActivity()));
 //        }
@@ -130,13 +166,6 @@ public class PhoneUsageFragment extends Fragment {
         super.onAttach(context);
         database = new SQLiteCRUD(context);
         database.openDatabase();
-
-//        if (context instanceof OnFragmentInteractionListener) {
-//            mListener = (OnFragmentInteractionListener) context;
-//        } else {
-//            throw new RuntimeException(context.toString()
-//                    + " must implement OnFragmentInteractionListener");
-//        }
     }
 
     @Override

@@ -69,9 +69,10 @@ public class SleepWakeCycleFragment extends Fragment {
 
         mChart = (LineChart) rootView.findViewById(R.id.swcchart);
         mChart.getDescription().setEnabled(false);
+
         XAxis xAxis = mChart.getXAxis();
         xAxis.setValueFormatter(new IAxisValueFormatter() {
-            private SimpleDateFormat mFormat = new SimpleDateFormat("MM/dd HH:mm");
+            private SimpleDateFormat mFormat = new SimpleDateFormat("HH:mm");
             @Override
             public String getFormattedValue(float value, AxisBase axis) {
 
@@ -118,9 +119,6 @@ public class SleepWakeCycleFragment extends Fragment {
     LineData generateSleepWakeData(String s) {
 
         ArrayList<Entry> swValues = new ArrayList<>();
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
-        sdf.setTimeZone(TimeZone.getDefault());
-
         swValues.add(new Entry(0, 3));
         swValues.addAll(getDailySleepWake(s));
 
@@ -144,11 +142,21 @@ public class SleepWakeCycleFragment extends Fragment {
 
     private ArrayList<Entry> getDailySleepWake(String date) {
         ArrayList<Entry> a = new ArrayList<>();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+        sdf.setTimeZone(TimeZone.getDefault());
+        long ref = 0;
+        try {
+            Date startDate = sdf.parse(date);
+            ref = TimeUnit.MILLISECONDS.toDays(startDate.getTime());
+        } catch (ParseException e1) {
+            e1.printStackTrace();
+        }
+
         List<SleepWakeCycle> swList = database.readSleepWakeCycle(date);
         if (swList == null) return a;
         for (int i = 0; i < swList.size(); i++) {
-            long start = TimeUnit.MILLISECONDS.toSeconds(swList.get(i).getStartTime());
-            long end = TimeUnit.MILLISECONDS.toSeconds(swList.get(i).getEndTime())-1;
+            long start = TimeUnit.MILLISECONDS.toSeconds(swList.get(i).getStartTime()-ref);
+            long end = TimeUnit.MILLISECONDS.toSeconds(swList.get(i).getEndTime()-ref)-1;
             a.add(new Entry(start, convertSleepStage(swList.get(i).getSleepStage())));
             a.add(new Entry(end, convertSleepStage(swList.get(i).getSleepStage())));
         }
