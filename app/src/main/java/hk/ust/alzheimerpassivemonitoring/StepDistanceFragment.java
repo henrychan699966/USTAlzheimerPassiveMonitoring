@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.components.AxisBase;
+import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
@@ -24,6 +25,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 public class StepDistanceFragment extends Fragment {
@@ -80,6 +82,16 @@ public class StepDistanceFragment extends Fragment {
         });
         mChart.setData(generateStepDistanceData(startingDate, endingDate));
 
+        Legend l = mChart.getLegend();
+        l.setVerticalAlignment(Legend.LegendVerticalAlignment.TOP);
+        l.setHorizontalAlignment(Legend.LegendHorizontalAlignment.RIGHT);
+        l.setOrientation(Legend.LegendOrientation.VERTICAL);
+        l.setDrawInside(true);
+        l.setYOffset(0f);
+        l.setXOffset(10f);
+        l.setYEntrySpace(0f);
+        l.setTextSize(8f);
+
         return rootView;
     }
 
@@ -89,6 +101,7 @@ public class StepDistanceFragment extends Fragment {
         ArrayList<BarEntry> distanceValues = new ArrayList<>();
 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+        sdf.setTimeZone(TimeZone.getDefault());
         long startDateMillis = 0;
         long endDateMillis = 0;
         try {
@@ -115,7 +128,6 @@ public class StepDistanceFragment extends Fragment {
         set1.setDrawValues(false);
 
         set2 = new BarDataSet(distanceValues, "Distance ");
-        set2 = new BarDataSet(stepValues, "Step ");
         set2.setAxisDependency(YAxis.AxisDependency.LEFT);
         set2.setColor(Color.GREEN);
         set2.setValueTextColor(ColorTemplate.getHoloBlue());

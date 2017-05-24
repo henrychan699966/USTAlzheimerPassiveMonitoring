@@ -38,6 +38,7 @@ import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.github.mikephil.charting.utils.ColorTemplate;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -108,122 +109,28 @@ public class GraphPlotter extends AppCompatActivity implements View.OnClickListe
     }
 
     private boolean checkDateValid(String s, String e) {
-//        TODO
+        final int MAX_DAY = 30;
+        final int MIN_INTERVAL = 0;
+        long startDateMillis = 0;
+        long endDateMillis = 0;
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+        sdf.setTimeZone(TimeZone.getDefault());
+        try {
+            Date startDate = sdf.parse(s);
+            Date endDate = sdf.parse(e);
+            startDateMillis = TimeUnit.MILLISECONDS.toDays(startDate.getTime());
+            endDateMillis = TimeUnit.MILLISECONDS.toDays(endDate.getTime());
+        } catch (ParseException e1) {
+            e1.printStackTrace();
+        }
+        if (startDateMillis > endDateMillis) {
+            return false;
+        } else if (endDateMillis-startDateMillis > MAX_DAY) {
+            return false;
+        } else if (endDateMillis-TimeUnit.MILLISECONDS.toDays(new Date().getTime())>MIN_INTERVAL) {
+            return false;
+        }
         return true;
-    }
-
-    public static class GraphFragment extends Fragment {
-
-        private static final String GRAPH_CONTENT = "graph_content";
-        private static final int PHONE_USAGE_GRAPH = 1;
-        private static final int STEP_DISTANCE_GRAPH = 2;
-        private static final int SLEEP_WAKE_GRAPH = 3;
-//        private static final int LOCATION_RECORD_GRAPH = 4;
-
-        public GraphFragment() {
-        }
-
-        public static GraphFragment newInstance(int sectionNumber, List<PhoneUsage> data) {
-            GraphFragment fragment = new GraphFragment();
-            Bundle args = new Bundle();
-            PhoneUsage[] puData = new PhoneUsage[data.size()];
-            for (int i = 0; i < data.size(); i++) {
-                puData[i] = data.get(i);
-            }
-
-            args.putInt(GRAPH_CONTENT, sectionNumber);
-            fragment.setArguments(args);
-            return fragment;
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_graph, container, false);
-            int graphType = getArguments().getInt(GRAPH_CONTENT);
-
-            switch (graphType) {
-                case PHONE_USAGE_GRAPH:
-                    LineChart c1 = (LineChart) rootView.findViewById(R.id.chart1);
-                    c1.setVisibility(View.GONE);
-                    PieChart chart1 = (PieChart) rootView.findViewById(R.id.chart2);
-
-                    chart1.setCenterText("Phone Usage");
-                    chart1.setUsePercentValues(true);
-                    chart1.setRotationEnabled(false);
-                    chart1.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
-                        @Override
-                        public void onValueSelected(Entry e, Highlight h) {
-                        }
-                        @Override
-                        public void onNothingSelected() {
-                        }
-                    });
-
-                    Legend l = chart1.getLegend();
-                    l.setVerticalAlignment(Legend.LegendVerticalAlignment.TOP);
-                    l.setHorizontalAlignment(Legend.LegendHorizontalAlignment.RIGHT);
-                    l.setOrientation(Legend.LegendOrientation.VERTICAL);
-                    l.setDrawInside(false);
-                    l.setXEntrySpace(7f);
-                    l.setYEntrySpace(0f);
-                    l.setYOffset(0f);
-                    break;
-                case STEP_DISTANCE_GRAPH:
-                    PieChart c2 = (PieChart) rootView.findViewById(R.id.chart2);
-                    c2.setVisibility(View.GONE);
-                    LineChart chart2 = (LineChart) rootView.findViewById(R.id.chart1);
-                    chart2.getXAxis().setValueFormatter(new IAxisValueFormatter() {
-                        private SimpleDateFormat mFormat = new SimpleDateFormat("dd-MM");
-                        @Override
-                        public String getFormattedValue(float value, AxisBase axis) {
-
-                            long millis = TimeUnit.DAYS.toMillis((long) value);
-                            return mFormat.format(new Date(millis));
-                        }
-                    });
-                    chart2.setData(generateStepDistanceData());
-                    break;
-                case SLEEP_WAKE_GRAPH:
-                    PieChart c3 = (PieChart) rootView.findViewById(R.id.chart2);
-                    c3.setVisibility(View.GONE);
-                    LineChart chart3 = (LineChart) rootView.findViewById(R.id.chart1);
-                    chart3.getXAxis().setValueFormatter(new IAxisValueFormatter() {
-                        private SimpleDateFormat mFormat = new SimpleDateFormat("HH:mm");
-                        @Override
-                        public String getFormattedValue(float value, AxisBase axis) {
-
-                            long millis = TimeUnit.HOURS.toMillis((long) value);
-                            return mFormat.format(new Date(millis));
-                        }
-                    });
-                    LimitLine ll1 = new LimitLine(300f, "Awake");
-                    ll1.setLineWidth(4f);
-                    ll1.enableDashedLine(10f, 10f, 0f);
-                    ll1.setLabelPosition(LimitLine.LimitLabelPosition.RIGHT_TOP);
-                    ll1.setTextSize(10f);
-
-                    LimitLine ll2 = new LimitLine(100f, "Asleep");
-                    ll2.setLineWidth(4f);
-                    ll2.enableDashedLine(10f, 10f, 0f);
-                    ll2.setLabelPosition(LimitLine.LimitLabelPosition.RIGHT_BOTTOM);
-                    ll2.setTextSize(10f);
-
-                    chart3.getAxisLeft().addLimitLine(ll1);
-                    chart3.getAxisLeft().addLimitLine(ll2);
-                    chart3.setData(generateSleepWakeData());
-                    break;
-//                case LOCATION_RECORD_GRAPH:
-//                    CombinedChart chart3 = (CombinedChart) rootView.findViewById(R.id.chart);
-//                    CombinedData data3 = new CombinedData();
-//                    data3.setData(generateData());
-//                    chart3.setData(data3);
-//                    break;
-
-                default:
-            }
-            return rootView;
-        }
     }
 
     static LineData generateStepDistanceData() {
