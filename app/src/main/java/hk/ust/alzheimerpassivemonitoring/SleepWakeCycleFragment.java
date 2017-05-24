@@ -117,7 +117,17 @@ public class SleepWakeCycleFragment extends Fragment {
     LineData generateSleepWakeData(String s) {
 
         ArrayList<Entry> swValues = new ArrayList<>();
-        swValues.add(new Entry(0, 3));
+        long startDateMillis = 0;
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+            sdf.setTimeZone(TimeZone.getDefault());
+            Date startDate = sdf.parse(s);
+            startDateMillis = TimeUnit.MILLISECONDS.toDays(startDate.getTime());
+        } catch (ParseException e1) {
+            e1.printStackTrace();
+        }
+        swValues.add(new Entry(TimeUnit.DAYS.toMillis((startDateMillis)), 3));
+        swValues.add(new Entry(TimeUnit.DAYS.toMillis((startDateMillis+1)), 0));
         swValues.addAll(getDailySleepWake(s));
 
         LineDataSet set1 = new LineDataSet(swValues, "Sleep-Wake ");

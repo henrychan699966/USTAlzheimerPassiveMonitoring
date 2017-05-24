@@ -123,7 +123,7 @@ public class StepDistanceFragment extends Fragment {
         }
 
         for (float x = startDateMillis; x <= endDateMillis; x++) {
-            String currentDate = sdf.format(x);
+            String currentDate = sdf.format(TimeUnit.DAYS.toMillis(((long) x)));
             stepValues.add(new BarEntry(x, getDailyStep(currentDate)));
             distanceValues.add(new BarEntry(x, getDailyDistance(currentDate)));
         }
@@ -150,23 +150,15 @@ public class StepDistanceFragment extends Fragment {
     }
 
     private int getDailyStep (String date) {
-        int totalStep = 0;
         List<StepDistance> stepList = database.readStepDistance(date);
         if (stepList == null) return 0;
-        for (int i = 0; i < stepList.size(); i++) {
-            totalStep += stepList.get(i).getStep();
-        }
-        return totalStep;
+        return stepList.get(0).getStep();
     }
 
     private float getDailyDistance (String date) {
-        int totalDistance = 0;
         List<StepDistance> distanceList = database.readStepDistance(date);
         if (distanceList == null) return 0;
-        for (int i = 0; i < distanceList.size(); i++) {
-            totalDistance += distanceList.get(i).getDistance();
-        }
-        return totalDistance;
+        return distanceList.get(0).getStep();
     }
 
     @Override

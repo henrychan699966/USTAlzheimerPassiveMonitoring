@@ -107,7 +107,7 @@ public class PhoneUsageFragment extends Fragment {
         ArrayList<Long> durationList = new ArrayList<>();
 
         for (float x = startDateMillis; x <= endDateMillis; x++) {
-            String currentDate = sdf.format(x);
+            String currentDate = sdf.format(TimeUnit.DAYS.toMillis(((long) x)));
             List<PhoneUsage> pu = database.readPhoneUsage(currentDate);
             if (pu != null) {
                 for (PhoneUsage ap : pu) {
