@@ -40,6 +40,7 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
@@ -52,6 +53,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.lang.reflect.Type;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -191,13 +193,12 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
                 database.createPhoneUsage(pu);
             }
         }
-
-        StepDistance sd = getStepDistance();
-        if(sd != null){
-            database.createStepDistance(sd);
-        }
-
         database.closeDatabase();
+
+
+        getStepDistance();
+
+
 
         //Update Last upload time
         FileOutputStream test = null;
@@ -437,21 +438,27 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
 
     }
 
-    public StepDistance getStepDistance(){
-        if(!existSharedPref("fitbitToken")) return null;
+    public void getStepDistance(){
+        if(!existSharedPref("fitbitToken")) return;
         String token = readSharedPref("fitbitToken");
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        String date = dateFormat.format(new Date());
+        //String date = dateFormat.format(new Date());
+        String date = "2017-05-15";
 
-        new FitbitStepDistance().execute(date,token);
+        new FitbitStepDistance(this).execute(date,token);
 
-        return new StepDistance(1,0,0);
+        return;
     }
 
-    private class FitbitStepDistance extends AsyncTask<String,Void,String> {
+    private class FitbitStepDistance extends AsyncTask<String,Void,StepDistance> {
+        private Context mContext;
+
+        public FitbitStepDistance (Context context){
+            mContext = context;
+        }
 
         @Override
-        protected String doInBackground(String... strings) {
+        protected StepDistance doInBackground(String... strings) {
             Log.e("FitbitServer","doInBackground");
             BasicHttpRequest request = BasicHttpRequestBuilder.create()
                     .setUrl("https://api.fitbit.com/1/user/-/activities/date/" + strings[0] +".json")
@@ -460,32 +467,60 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
                     .setMethod("GET")
                     .build();
 
-            String result = null;
+            String result = "";
+            String responseBodyStr = null;
             try {
                 final BasicHttpResponse response = request.execute();
-                final String responseBodyStr = response.getBodyAsString();
+                responseBodyStr = response.getBodyAsString();
 
             } catch (final IOException e) {
             }
 
             JsonParser jp = new JsonParser();
-
+            JsonObject jo;
 
             try {
-                ja[i] = (JsonArray) jp.parse(s[i]);
+                jo = (JsonObject) jp.parse(responseBodyStr);
             } catch (RuntimeException e) {
-                ja[i] = new JsonArray();
+                jo = new JsonObject();
             }
 
+            result += jo.getAsJsonObject("summary").get("steps").toString() + ",";
+            for(JsonElement je :jo.getAsJsonObject("summary").getAsJsonArray("distances")){
+                if(je.getAsJsonObject().get("activity").toString().equals("\"total\"")){
+                    result += je.getAsJsonObject().get("distance").toString();
+                }
+            }
 
-            return result;
+            StepDistance sd = new StepDistance(dateToEpoch(strings[0].replaceAll("-","")),Integer.parseInt(result.substring(0,result.indexOf(","))),Float.parseFloat(result.substring(result.indexOf(",")+1)));
+
+            return sd;
         }
 
         @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
+        protected void onPostExecute(StepDistance sd) {
+
+            SQLiteCRUD database = new SQLiteCRUD(mContext);
+            database.openDatabase();
+            database.createStepDistance(sd);
+            Log.e("record",Float.toString(sd.getDistance()) + Integer.toString(sd.getStep()));
+            database.closeDatabase();
+
+            super.onPostExecute(sd);
         }
 
 
+    }
+
+    public long dateToEpoch(String date){
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+        Date d;
+        try {
+            d = sdf.parse(date);
+        } catch (ParseException e) {
+            throw new RuntimeException("Failed to parse date: ", e);
+        }
+
+        return d.getTime();
     }
 }
