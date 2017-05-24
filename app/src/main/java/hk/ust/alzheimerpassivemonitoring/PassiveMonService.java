@@ -197,6 +197,7 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
 
 
         getStepDistance();
+        getSleepWakeCycle();
 
 
 
