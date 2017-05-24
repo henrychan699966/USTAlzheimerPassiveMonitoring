@@ -33,7 +33,6 @@ public class SleepWakeCycleFragment extends Fragment {
     private static final String[] SLEEP_CYCLE = {"deep","light","rem","wake"};
 
     private SQLiteCRUD database;
-    private List<SleepWakeCycle> sleepWakeCycleRecord;
 
     private String startingDate;
 
@@ -43,7 +42,7 @@ public class SleepWakeCycleFragment extends Fragment {
         // Required empty public constructor
     }
 
-    public static SleepWakeCycleFragment newInstance(String startDate, String endDate) {
+    public static SleepWakeCycleFragment newInstance(String startDate) {
         SleepWakeCycleFragment fragment = new SleepWakeCycleFragment();
         Bundle args = new Bundle();
         args.putString(START_DATE, startDate);
@@ -119,14 +118,14 @@ public class SleepWakeCycleFragment extends Fragment {
     LineData generateSleepWakeData(String s) {
 
         ArrayList<Entry> swValues = new ArrayList<>();
-        long startDateMillis = 0;
+        long startDateMillis;
         try {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
             sdf.setTimeZone(TimeZone.getDefault());
             Date startDate = sdf.parse(s);
             startDateMillis = TimeUnit.MILLISECONDS.toDays(startDate.getTime());
         } catch (ParseException e1) {
-            e1.printStackTrace();
+            startDateMillis = 0;
         }
         swValues.add(new Entry(TimeUnit.DAYS.toMillis((startDateMillis)), 3));
         swValues.add(new Entry(TimeUnit.DAYS.toMillis((startDateMillis+1)), 0));

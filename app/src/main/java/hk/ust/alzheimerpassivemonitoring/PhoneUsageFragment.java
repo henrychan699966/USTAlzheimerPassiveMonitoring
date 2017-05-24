@@ -17,13 +17,11 @@ import com.github.mikephil.charting.data.PieEntry;
 import com.github.mikephil.charting.formatter.PercentFormatter;
 import com.github.mikephil.charting.utils.ColorTemplate;
 
-import java.sql.Time;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 public class PhoneUsageFragment extends Fragment {
@@ -32,7 +30,6 @@ public class PhoneUsageFragment extends Fragment {
     private static final String END_DATE = "end_date";
 
     private SQLiteCRUD database;
-    private List<PhoneUsage> phoneUsageRecord;
 
     private String startingDate;
     private String endingDate;
@@ -67,8 +64,6 @@ public class PhoneUsageFragment extends Fragment {
         // Inflate the layout for this fragment
         final View rootView = inflater.inflate(R.layout.fragment_phone_usage, container, false);
 
-        phoneUsageRecord = database.readPhoneUsage(endingDate);
-
         mChart = (PieChart) rootView.findViewById(R.id.puchart);
         mChart.getDescription().setEnabled(false);
         mChart.setCenterText("Phone Usage");
@@ -91,22 +86,19 @@ public class PhoneUsageFragment extends Fragment {
     PieData generatePhoneUsageData(String s, String e) {
 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
-        //sdf.setTimeZone(TimeZone.getDefault());
-        long startDateMillis = 0;
-        long endDateMillis = 0;
-
-        Date startDate = null;
-        Date endDate = null;
+        Date startDate;
+        Date endDate;
+        long totalMillis;
         try {
             startDate = sdf.parse(s);
             endDate = sdf.parse(e);
-            startDateMillis = TimeUnit.MILLISECONDS.toDays(startDate.getTime());
-            endDateMillis = TimeUnit.MILLISECONDS.toDays(endDate.getTime());
+            totalMillis = endDate.getTime()-startDate.getTime() + TimeUnit.DAYS.toMillis(1);
         } catch (ParseException e1) {
-            e1.printStackTrace();
+            startDate = new Date();
+            endDate = startDate;
+            totalMillis = TimeUnit.DAYS.toMillis(1);
         }
 
-        long totalMillis = endDate.getTime()-startDate.getTime() + TimeUnit.DAYS.toMillis(1);
         long totalDur = 0;
         ArrayList<String> nameList = new ArrayList<>();
         ArrayList<Long> durationList = new ArrayList<>();

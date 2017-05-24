@@ -40,9 +40,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
 
 
-        if (!AuthenticationManager.isLoggedIn()) {
-            AuthenticationManager.login(this);
-        }
+//        if (!AuthenticationManager.isLoggedIn()) {
+//            AuthenticationManager.login(this);
+//        }
 
 
         setContentView(R.layout.activity_main);
