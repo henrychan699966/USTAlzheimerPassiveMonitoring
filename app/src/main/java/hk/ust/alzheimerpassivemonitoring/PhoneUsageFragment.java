@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +17,7 @@ import com.github.mikephil.charting.data.PieEntry;
 import com.github.mikephil.charting.formatter.PercentFormatter;
 import com.github.mikephil.charting.utils.ColorTemplate;
 
+import java.sql.Time;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -89,26 +91,30 @@ public class PhoneUsageFragment extends Fragment {
     PieData generatePhoneUsageData(String s, String e) {
 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
-        sdf.setTimeZone(TimeZone.getDefault());
+        //sdf.setTimeZone(TimeZone.getDefault());
         long startDateMillis = 0;
         long endDateMillis = 0;
+
+        Date startDate = null;
+        Date endDate = null;
         try {
-            Date startDate = sdf.parse(s);
-            Date endDate = sdf.parse(e);
+            startDate = sdf.parse(s);
+            endDate = sdf.parse(e);
             startDateMillis = TimeUnit.MILLISECONDS.toDays(startDate.getTime());
             endDateMillis = TimeUnit.MILLISECONDS.toDays(endDate.getTime());
         } catch (ParseException e1) {
             e1.printStackTrace();
         }
 
-        long totalMillis = TimeUnit.DAYS.toMillis((endDateMillis-startDateMillis+1));
+        long totalMillis = TimeUnit.DAYS.toMillis((endDate.getTime()-startDate.getTime()+1));
         long totalDur = 0;
         ArrayList<String> nameList = new ArrayList<>();
         ArrayList<Long> durationList = new ArrayList<>();
 
-        for (long x = startDateMillis; x <= endDateMillis; x++) {
-            String currentDate = sdf.format(TimeUnit.DAYS.toMillis((x)));
+        for (long x = startDate.getTime(); x <= endDate.getTime(); x+= TimeUnit.DAYS.toMillis(1)) {
+            String currentDate = sdf.format(x);
             List<PhoneUsage> pu = database.readPhoneUsage(currentDate);
+            Log.e("PU",currentDate + " : " + Long.toString(x));
             if (pu != null) {
                 for (PhoneUsage ap : pu) {
                     if (!nameList.contains(ap.getActivity())) {
