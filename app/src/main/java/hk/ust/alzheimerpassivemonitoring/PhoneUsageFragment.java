@@ -141,7 +141,7 @@ public class PhoneUsageFragment extends Fragment {
 
         PieData data = new PieData(dataSet);
         data.setValueFormatter(new PercentFormatter());
-        data.setValueTextSize(11f);
+        data.setValueTextSize(10f);
         data.setValueTextColor(Color.BLACK);
 
         return data;
