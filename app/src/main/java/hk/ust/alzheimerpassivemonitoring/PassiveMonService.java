@@ -215,10 +215,6 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
         } catch (IOException e) {
         }
 
-        FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
-        DatabaseReference databaseReference = firebaseDatabase.getReference("data");
-
-        databaseReference.setValue(extractDailyData(context));
     }
 
     //get app usage from s seconds ago to now
@@ -452,8 +448,10 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         //String date = dateFormat.format(new Date());
         String date = "2017-05-15";
+        String date2 = "2017-05-14";
 
         new FitbitStepDistance(this).execute(date,token);
+        new FitbitStepDistance(this).execute(date2,token);
 
         return;
     }

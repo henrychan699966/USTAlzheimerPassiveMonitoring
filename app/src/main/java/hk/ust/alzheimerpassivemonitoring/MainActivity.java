@@ -24,6 +24,8 @@ import android.widget.Toast;
 import com.fitbit.authentication.AuthenticationHandler;
 import com.fitbit.authentication.AuthenticationManager;
 import com.fitbit.authentication.AuthenticationResult;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, AuthenticationHandler {
@@ -46,6 +48,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
         Button graphButton = (Button) findViewById(R.id.graphButton);
         graphButton.setOnClickListener(this);
+
 
     }
 
@@ -112,6 +115,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             PendingIntent alarmIntent = PendingIntent.getService(this, 0, pendingService, 0);
             am.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 30 * 1000, alarmIntent);
         }
+
+
     }
 
     @Override
