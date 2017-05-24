@@ -108,15 +108,17 @@ public class PhoneUsageFragment extends Fragment {
         for (float x = startDateMillis; x <= endDateMillis; x++) {
             String currentDate = sdf.format(x);
             List<PhoneUsage> pu = database.readPhoneUsage(currentDate);
-            for (PhoneUsage ap : pu) {
-                if (!nameList.contains(ap.getActivity())) {
-                    nameList.add(ap.getActivity());
-                    durationList.add(ap.getStartTime() - ap.getEndTime());
-                } else {
-                    int index = nameList.indexOf(ap.getActivity());
-                    durationList.add(index,durationList.get(index) + ap.getStartTime() - ap.getEndTime());
+            if (pu != null) {
+                for (PhoneUsage ap : pu) {
+                    if (!nameList.contains(ap.getActivity())) {
+                        nameList.add(ap.getActivity());
+                        durationList.add(ap.getStartTime() - ap.getEndTime());
+                    } else {
+                        int index = nameList.indexOf(ap.getActivity());
+                        durationList.add(index,durationList.get(index) + ap.getStartTime() - ap.getEndTime());
+                    }
+                    totalDur += ap.getStartTime() - ap.getEndTime();
                 }
-                totalDur += ap.getStartTime() - ap.getEndTime();
             }
         }
         totalDur = TimeUnit.MILLISECONDS.toSeconds(totalDur);

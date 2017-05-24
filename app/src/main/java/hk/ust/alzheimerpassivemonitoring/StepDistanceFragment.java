@@ -90,7 +90,7 @@ public class StepDistanceFragment extends Fragment {
             private SimpleDateFormat mFormat = new SimpleDateFormat("dd-MM");
             @Override
             public String getFormattedValue(float value, AxisBase axis) {
-
+                mFormat.setTimeZone(TimeZone.getDefault());
                 long millis = TimeUnit.DAYS.toMillis((long) value);
                 return mFormat.format(new Date(millis));
             }
