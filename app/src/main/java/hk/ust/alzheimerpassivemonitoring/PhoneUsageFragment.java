@@ -116,7 +116,7 @@ public class PhoneUsageFragment extends Fragment {
                         durationList.add(ap.getEndTime() - ap.getStartTime());
                     } else {
                         int index = nameList.indexOf(ap.getActivity());
-                        durationList.add(index,durationList.get(index) - ap.getStartTime() + ap.getEndTime());
+                        durationList.set(index,durationList.get(index) - ap.getStartTime() + ap.getEndTime());
                     }
                     totalDur += (ap.getEndTime() - ap.getStartTime());
                 }
