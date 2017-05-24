@@ -142,7 +142,7 @@ public class StepDistanceFragment extends Fragment {
 
         BarDataSet set1, set2;
 
-        if (mChart.getData() != null && mChart.getData().getDataSetCount() > 0) {
+        if (mChart.getData() != null && mChart.getData().getDataSetCount() == 2) {
             set1 = (BarDataSet) mChart.getData().getDataSetByIndex(0);
             set2 = (BarDataSet) mChart.getData().getDataSetByIndex(1);
             set1.setValues(stepValues);
