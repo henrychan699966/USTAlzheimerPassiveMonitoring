@@ -7,9 +7,11 @@ import android.app.AppOpsManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -34,42 +36,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        //get access to app usage permission
-        if (!hasPermission()){
-            requestPermission();
-        }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (checkSelfPermission(Manifest.permission.READ_CALL_LOG) != PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(new String[]{Manifest.permission.READ_CALL_LOG}, PERMISSIONS_REQUEST_READ_CALL_LOG);
-            }
-        }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION},PERMISSION_REQUEST_FINE_LOCATION);
-            }
-        }
-
 
         if (!AuthenticationManager.isLoggedIn()) {
             AuthenticationManager.login(this);
         }
 
 
-        //Check if an alarm has been scheduled, if not , start the passive monitoring service 1 min later
-        Intent pendingService = new Intent(getApplicationContext(),PassiveMonService.class);
-        boolean alarmNotExist = (PendingIntent.getService(getApplicationContext(),0,pendingService,PendingIntent.FLAG_NO_CREATE) == null);
-        if (alarmNotExist) {
-            Log.e("Activity","No Alarm");
-            AlarmManager am = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
-            PendingIntent alarmIntent = PendingIntent.getService(this, 0, pendingService, 0);
-            am.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 30 * 1000, alarmIntent);
-        }
-
         setContentView(R.layout.activity_main);
         Button graphButton = (Button) findViewById(R.id.graphButton);
         graphButton.setOnClickListener(this);
+
     }
 
 
@@ -93,6 +69,46 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 startActivity(new Intent(this, GraphPlotter.class));
                 break;
             default:
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        AuthenticationManager.onActivityResult(requestCode, resultCode, data, (AuthenticationHandler) this);
+
+        AuthenticationManager.getCurrentAccessToken().getAccessToken();
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString("fitbitToken",AuthenticationManager.getCurrentAccessToken().getAccessToken());
+        editor.commit();
+        Log.e("token",sharedPref.getString("fitbitToken",""));
+
+        //get access to app usage permission
+        if (!hasPermission()){
+            requestPermission();
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(Manifest.permission.READ_CALL_LOG) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{Manifest.permission.READ_CALL_LOG}, PERMISSIONS_REQUEST_READ_CALL_LOG);
+            }
+        }
+
+        //if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION},PERMISSION_REQUEST_FINE_LOCATION);
+        }
+        //}
+
+        //Check if an alarm has been scheduled, if not , start the passive monitoring service 1 min later
+        Intent pendingService = new Intent(getApplicationContext(),PassiveMonService.class);
+        boolean alarmNotExist = (PendingIntent.getService(getApplicationContext(),0,pendingService,PendingIntent.FLAG_NO_CREATE) == null);
+        if (alarmNotExist) {
+            Log.e("Activity","No Alarm");
+            AlarmManager am = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
+            PendingIntent alarmIntent = PendingIntent.getService(this, 0, pendingService, 0);
+            am.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 30 * 1000, alarmIntent);
         }
     }
 

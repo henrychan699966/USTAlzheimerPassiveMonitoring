@@ -14,14 +14,12 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.location.Location;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.provider.CallLog;
 import android.support.annotation.NonNull;
-import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 
 
@@ -345,7 +343,6 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
     }
 
 
-    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     public void onConnected(@Nullable Bundle bundle) {
         Log.e("getLocation","onConnected");
