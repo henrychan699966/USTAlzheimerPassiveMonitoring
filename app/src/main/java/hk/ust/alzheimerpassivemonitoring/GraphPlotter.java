@@ -124,10 +124,13 @@ public class GraphPlotter extends AppCompatActivity implements View.OnClickListe
             e1.printStackTrace();
         }
         if (startDateMillis > endDateMillis) {
+            showToast("Error in start date");
             return false;
         } else if (endDateMillis-startDateMillis > MAX_DAY) {
+            showToast("Error in interval length");
             return false;
-        } else if (endDateMillis-TimeUnit.MILLISECONDS.toDays(new Date().getTime())>MIN_INTERVAL) {
+        } else if (TimeUnit.MILLISECONDS.toDays(new Date().getTime())-endDateMillis>=MIN_INTERVAL) {
+            showToast("Error in end date");
             return false;
         }
         return true;
@@ -282,4 +285,7 @@ public class GraphPlotter extends AppCompatActivity implements View.OnClickListe
         mSectionsPagerAdapter.notifyDataSetChanged();
     }
 
+    public void showToast(String str) {
+        Toast.makeText(this, str, Toast.LENGTH_SHORT).show();
+    }
 }

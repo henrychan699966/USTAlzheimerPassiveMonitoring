@@ -2,7 +2,6 @@ package hk.ust.alzheimerpassivemonitoring;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -35,7 +34,6 @@ public class StepDistanceFragment extends Fragment {
     private static final String END_DATE = "end_date";
 
     private SQLiteCRUD database;
-    private List<StepDistance> stepDistanceRecord;
 
     private String startingDate;
     private String endingDate;
@@ -112,7 +110,6 @@ public class StepDistanceFragment extends Fragment {
 
         for (float x = startDateMillis; x <= endDateMillis; x++) {
             String currentDate = sdf.format(x);
-            Log.e("sd",currentDate);
             stepValues.add(new BarEntry(x, getDailyStep(currentDate)));
             distanceValues.add(new BarEntry(x, getDailyDistance(currentDate)));
         }
@@ -131,6 +128,7 @@ public class StepDistanceFragment extends Fragment {
         set2.setDrawValues(false);
 
         BarData data = new BarData(set1, set2);
+        data.groupBars(0f,0.15f,0.01f);
         data.setValueTextColor(Color.WHITE);
         data.setValueTextSize(9f);
 

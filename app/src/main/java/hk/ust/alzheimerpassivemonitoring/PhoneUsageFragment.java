@@ -37,6 +37,8 @@ public class PhoneUsageFragment extends Fragment {
     private String startingDate;
     private String endingDate;
 
+    private PieChart mChart;
+
     public PhoneUsageFragment() {
         // Required empty public constructor
     }
@@ -67,12 +69,12 @@ public class PhoneUsageFragment extends Fragment {
 
         phoneUsageRecord = database.readPhoneUsage(endingDate);
 
-        PieChart chart1 = (PieChart) rootView.findViewById(R.id.puchart);
-        chart1.setCenterText("Phone Usage");
-        chart1.setUsePercentValues(true);
-        chart1.setRotationEnabled(false);
-        chart1.setData(generatePhoneUsageData());
-        chart1.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
+        mChart = (PieChart) rootView.findViewById(R.id.puchart);
+        mChart.setCenterText("Phone Usage");
+        mChart.setUsePercentValues(true);
+        mChart.setRotationEnabled(false);
+        mChart.setData(generatePhoneUsageData());
+        mChart.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
             @Override
             public void onValueSelected(Entry e, Highlight h) {
             }
@@ -80,7 +82,7 @@ public class PhoneUsageFragment extends Fragment {
             public void onNothingSelected() {
             }
         });
-        Legend l = chart1.getLegend();
+        Legend l = mChart.getLegend();
         l.setVerticalAlignment(Legend.LegendVerticalAlignment.TOP);
         l.setHorizontalAlignment(Legend.LegendHorizontalAlignment.RIGHT);
         l.setOrientation(Legend.LegendOrientation.VERTICAL);
@@ -146,5 +148,8 @@ public class PhoneUsageFragment extends Fragment {
     public void updateDate(String s, String e) {
         startingDate = s;
         endingDate = e;
+        mChart.setData(generatePhoneUsageData());
+        mChart.notifyDataSetChanged();
+        mChart.invalidate();
     }
 }

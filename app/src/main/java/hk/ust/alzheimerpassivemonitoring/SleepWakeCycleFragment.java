@@ -10,13 +10,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.AxisBase;
 import com.github.mikephil.charting.components.LimitLine;
+import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
-import com.github.mikephil.charting.data.BarData;
-import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
@@ -24,10 +22,13 @@ import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 import com.github.mikephil.charting.utils.ColorTemplate;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 
@@ -35,12 +36,15 @@ public class SleepWakeCycleFragment extends Fragment {
 
     private static final String START_DATE = "start_date";
     private static final String END_DATE = "end_date";
+    private static final String[] SLEEP_CYCLE = {"deep","light","rem","wake"};
 
     private SQLiteCRUD database;
     private List<SleepWakeCycle> sleepWakeCycleRecord;
 
     private String startingDate;
     private String endingDate;
+
+    private LineChart mChart;
 
     public SleepWakeCycleFragment() {
         // Required empty public constructor
@@ -70,10 +74,11 @@ public class SleepWakeCycleFragment extends Fragment {
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_sleep_wake_cycle, container, false);
 
-        LineChart mChart = (LineChart) rootView.findViewById(R.id.swcchart);
+        mChart = (LineChart) rootView.findViewById(R.id.swcchart);
         mChart.getDescription().setEnabled(false);
-        mChart.getXAxis().setValueFormatter(new IAxisValueFormatter() {
-            private SimpleDateFormat mFormat = new SimpleDateFormat("HH:mm");
+        XAxis xAxis = mChart.getXAxis();
+        xAxis.setValueFormatter(new IAxisValueFormatter() {
+            private SimpleDateFormat mFormat = new SimpleDateFormat("MM/dd HH:mm");
             @Override
             public String getFormattedValue(float value, AxisBase axis) {
 
@@ -81,37 +86,63 @@ public class SleepWakeCycleFragment extends Fragment {
                 return mFormat.format(new Date(millis));
             }
         });
-        LimitLine ll1 = new LimitLine(300f, "Awake");
+        xAxis.setGranularity(1);
+
+        LimitLine ll1 = new LimitLine(0f, "Deep");
         ll1.setLineWidth(4f);
         ll1.enableDashedLine(10f, 10f, 0f);
-        ll1.setLabelPosition(LimitLine.LimitLabelPosition.RIGHT_TOP);
-        ll1.setTextSize(10f);
+        ll1.setLabelPosition(LimitLine.LimitLabelPosition.RIGHT_BOTTOM);
+        ll1.setTextSize(8f);
 
-        LimitLine ll2 = new LimitLine(100f, "Asleep");
+        LimitLine ll2 = new LimitLine(1f, "Light");
         ll2.setLineWidth(4f);
-        ll2.enableDashedLine(10f, 10f, 0f);
+        ll2.enableDashedLine(5f, 5f, 0f);
         ll2.setLabelPosition(LimitLine.LimitLabelPosition.RIGHT_BOTTOM);
-        ll2.setTextSize(10f);
+        ll2.setTextSize(8f);
+
+        LimitLine ll3 = new LimitLine(2f, "REM");
+        ll2.setLineWidth(4f);
+        ll2.enableDashedLine(5f, 5f, 0f);
+        ll2.setLabelPosition(LimitLine.LimitLabelPosition.RIGHT_BOTTOM);
+        ll2.setTextSize(8f);
+
+        LimitLine ll4 = new LimitLine(3f, "Wake");
+        ll2.setLineWidth(4f);
+        ll2.enableDashedLine(5f, 5f, 0f);
+        ll2.setLabelPosition(LimitLine.LimitLabelPosition.RIGHT_BOTTOM);
+        ll2.setTextSize(8f);
 
         mChart.getAxisLeft().addLimitLine(ll1);
         mChart.getAxisLeft().addLimitLine(ll2);
-        mChart.setData(generateSleepWakeData());
+        mChart.getAxisLeft().addLimitLine(ll3);
+        mChart.getAxisLeft().addLimitLine(ll4);
+        mChart.setData(generateSleepWakeData(startingDate, endingDate));
 
         return rootView;
     }
 
-    LineData generateSleepWakeData() {
+    LineData generateSleepWakeData(String s, String e) {
 
-        ArrayList<Entry> values = new ArrayList<>();
-
-        for (float x = -8; x < 0; x++) {
-            values.add(new Entry(x, x*(-10)+x%3));
+        ArrayList<Entry> swValues = new ArrayList<>();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+        sdf.setTimeZone(TimeZone.getDefault());
+        long startDateMillis = 0;
+        long endDateMillis = 0;
+        try {
+            Date startDate = sdf.parse(s);
+            Date endDate = sdf.parse(e);
+            startDateMillis = TimeUnit.MILLISECONDS.toDays(startDate.getTime());
+            endDateMillis = TimeUnit.MILLISECONDS.toDays(endDate.getTime());
+        } catch (ParseException e1) {
+            e1.printStackTrace();
         }
-        for (float x = 0; x < 16; x++) {
-            values.add(new Entry(x, 400+ (float) Math.pow(-1,x) *(x+x%4)));
+
+        for (float x = startDateMillis; x <= endDateMillis; x++) {
+            String currentDate = sdf.format(x);
+            swValues.addAll(getDailySleepWake(currentDate));
         }
 
-        LineDataSet set1 = new LineDataSet(values, "DataSet2 ");
+        LineDataSet set1 = new LineDataSet(swValues, "Sleep-Wake ");
         set1.setAxisDependency(YAxis.AxisDependency.LEFT);
         set1.setColor(ColorTemplate.getHoloBlue());
         set1.setValueTextColor(ColorTemplate.getHoloBlue());
@@ -129,18 +160,47 @@ public class SleepWakeCycleFragment extends Fragment {
         return data;
     }
 
+    private ArrayList<Entry> getDailySleepWake(String date) {
+        ArrayList<Entry> a = new ArrayList<>();
+        List<SleepWakeCycle> swList = database.readSleepWakeCycle(date);
+        for (int i = 0; i < swList.size(); i++) {
+            long start = TimeUnit.MILLISECONDS.toSeconds(swList.get(i).getStartTime());
+            long end = TimeUnit.MILLISECONDS.toSeconds(swList.get(i).getEndTime())-1;
+            a.add(new Entry(start, convertSleepStage(swList.get(i).getSleepStage())));
+            a.add(new Entry(end, convertSleepStage(swList.get(i).getSleepStage())));
+        }
+        return a;
+    }
+
+    private int convertSleepStage (String s) {
+        if (s.equals(SLEEP_CYCLE[0])) {
+            return 0;
+        } else if (s.equals(SLEEP_CYCLE[1])) {
+            return 1;
+        } else if (s.equals(SLEEP_CYCLE[2])) {
+            return 2;
+        }
+        return 3;
+    }
+
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+        database = new SQLiteCRUD(context);
+        database.openDatabase();
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
+        database.closeDatabase();
     }
 
     public void updateDate(String s, String e) {
         startingDate = s;
         endingDate = e;
+        mChart.setData(generateSleepWakeData(startingDate, endingDate));
+        mChart.notifyDataSetChanged();
+        mChart.invalidate();
     }
 }
