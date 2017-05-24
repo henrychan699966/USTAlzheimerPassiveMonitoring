@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.components.AxisBase;
 import com.github.mikephil.charting.components.Legend;
+import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
@@ -71,7 +72,9 @@ public class StepDistanceFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_step_distance, container, false);
 
         mChart = (BarChart) rootView.findViewById(R.id.sdchart);
-        mChart.getXAxis().setValueFormatter(new IAxisValueFormatter() {
+        mChart.getDescription().setEnabled(false);
+        XAxis xAxis = mChart.getXAxis();
+        xAxis.setValueFormatter(new IAxisValueFormatter() {
             private SimpleDateFormat mFormat = new SimpleDateFormat("dd-MM");
             @Override
             public String getFormattedValue(float value, AxisBase axis) {
@@ -80,16 +83,10 @@ public class StepDistanceFragment extends Fragment {
                 return mFormat.format(new Date(millis));
             }
         });
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         mChart.setData(generateStepDistanceData(startingDate, endingDate));
 
         Legend l = mChart.getLegend();
-        l.setVerticalAlignment(Legend.LegendVerticalAlignment.TOP);
-        l.setHorizontalAlignment(Legend.LegendHorizontalAlignment.RIGHT);
-        l.setOrientation(Legend.LegendOrientation.VERTICAL);
-        l.setDrawInside(true);
-        l.setYOffset(0f);
-        l.setXOffset(10f);
-        l.setYEntrySpace(0f);
         l.setTextSize(8f);
 
         return rootView;

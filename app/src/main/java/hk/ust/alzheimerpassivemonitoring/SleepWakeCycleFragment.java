@@ -70,8 +70,9 @@ public class SleepWakeCycleFragment extends Fragment {
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_sleep_wake_cycle, container, false);
 
-        LineChart chart1 = (LineChart) rootView.findViewById(R.id.swcchart);
-        chart1.getXAxis().setValueFormatter(new IAxisValueFormatter() {
+        LineChart mChart = (LineChart) rootView.findViewById(R.id.swcchart);
+        mChart.getDescription().setEnabled(false);
+        mChart.getXAxis().setValueFormatter(new IAxisValueFormatter() {
             private SimpleDateFormat mFormat = new SimpleDateFormat("HH:mm");
             @Override
             public String getFormattedValue(float value, AxisBase axis) {
@@ -92,9 +93,9 @@ public class SleepWakeCycleFragment extends Fragment {
         ll2.setLabelPosition(LimitLine.LimitLabelPosition.RIGHT_BOTTOM);
         ll2.setTextSize(10f);
 
-        chart1.getAxisLeft().addLimitLine(ll1);
-        chart1.getAxisLeft().addLimitLine(ll2);
-        chart1.setData(generateSleepWakeData());
+        mChart.getAxisLeft().addLimitLine(ll1);
+        mChart.getAxisLeft().addLimitLine(ll2);
+        mChart.setData(generateSleepWakeData());
 
         return rootView;
     }
