@@ -1,31 +1,19 @@
 package hk.ust.alzheimerpassivemonitoring;
 
-import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Context;
 import android.graphics.Color;
-import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
-import android.widget.TextView;
 
 import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.components.Legend;
-import com.github.mikephil.charting.data.BarEntry;
-import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
 import com.github.mikephil.charting.formatter.PercentFormatter;
-import com.github.mikephil.charting.highlight.Highlight;
-import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.github.mikephil.charting.utils.ColorTemplate;
 
 import java.text.ParseException;
@@ -140,10 +128,6 @@ public class PhoneUsageFragment extends Fragment {
         for (int i = 0; i < nameList.size(); i++) {
             entries.add(new PieEntry(TimeUnit.MILLISECONDS.toSeconds(durationList.get(i)),nameList.get(i)));
         }
-        
-//        for (PhoneUsage aP : p) {
-//            entries.add(new PieEntry(aP.getStartTime() - aP.getEndTime(), aP.getActivity()));
-//        }
 
         PieDataSet dataSet = new PieDataSet(entries, "Phone Usage");
 
