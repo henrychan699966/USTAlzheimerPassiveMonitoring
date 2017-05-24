@@ -493,7 +493,7 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
                 }
             }
 
-            StepDistance sd = new StepDistance(dateToEpoch(strings[0].replaceAll("-","")),Integer.parseInt(result.substring(0,result.indexOf(","))),Float.parseFloat(result.substring(result.indexOf(",")+1)));
+            StepDistance sd = new StepDistance(dateToEpoch(strings[0].replaceAll("-","")) + TimeUnit.HOURS.toMillis(3),Integer.parseInt(result.substring(0,result.indexOf(","))),Float.parseFloat(result.substring(result.indexOf(",")+1)));
 
             return sd;
         }
