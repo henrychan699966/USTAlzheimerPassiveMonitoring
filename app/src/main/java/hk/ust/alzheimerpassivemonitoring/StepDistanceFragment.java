@@ -19,20 +19,13 @@ import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 import com.github.mikephil.charting.utils.ColorTemplate;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link StepDistanceFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link StepDistanceFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class StepDistanceFragment extends Fragment {
 
     private static final String START_DATE = "start_date";
@@ -43,6 +36,8 @@ public class StepDistanceFragment extends Fragment {
 
     private String startingDate;
     private String endingDate;
+
+    private BarChart mChart;
 
     public StepDistanceFragment() {
         // Required empty public constructor
@@ -73,8 +68,8 @@ public class StepDistanceFragment extends Fragment {
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_step_distance, container, false);
 
-        BarChart chart1 = (BarChart) rootView.findViewById(R.id.sdchart);
-        chart1.getXAxis().setValueFormatter(new IAxisValueFormatter() {
+        mChart = (BarChart) rootView.findViewById(R.id.sdchart);
+        mChart.getXAxis().setValueFormatter(new IAxisValueFormatter() {
             private SimpleDateFormat mFormat = new SimpleDateFormat("dd-MM");
             @Override
             public String getFormattedValue(float value, AxisBase axis) {
@@ -83,38 +78,79 @@ public class StepDistanceFragment extends Fragment {
                 return mFormat.format(new Date(millis));
             }
         });
-        chart1.setData(generateStepDistanceData());
+        mChart.setData(generateStepDistanceData(startingDate, endingDate));
 
         return rootView;
     }
 
-    BarData generateStepDistanceData() {
+    BarData generateStepDistanceData(String s, String e) {
 
-        ArrayList<BarEntry> values = new ArrayList<>();
+        ArrayList<BarEntry> stepValues = new ArrayList<>();
+        ArrayList<BarEntry> distanceValues = new ArrayList<>();
 
-        long now = TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis());
-        Log.e("now", now+"");
-
-        for (float x = now-7; x < now; x++) {
-            values.add(new BarEntry(x, x/2 + (float) Math.pow(-1,x) * (x%4)));
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+        long startDateMillis = 0;
+        long endDateMillis = 0;
+        try {
+            Date startDate = sdf.parse(s);
+            Date endDate = sdf.parse(e);
+            startDateMillis = TimeUnit.MILLISECONDS.toDays(startDate.getTime());
+            endDateMillis = TimeUnit.MILLISECONDS.toDays(endDate.getTime());
+        } catch (ParseException e1) {
+            e1.printStackTrace();
         }
 
-        BarDataSet set1 = new BarDataSet(values, "DataSet1 ");
+        for (float x = startDateMillis; x <= endDateMillis; x++) {
+            String currentDate = sdf.format(x);
+            Log.e("sd",currentDate);
+            stepValues.add(new BarEntry(x, getDailyStep(currentDate)));
+            distanceValues.add(new BarEntry(x, getDailyDistance(currentDate)));
+        }
+
+        BarDataSet set1, set2;
+        set1 = new BarDataSet(stepValues, "Step ");
         set1.setAxisDependency(YAxis.AxisDependency.LEFT);
-        set1.setColor(ColorTemplate.getHoloBlue());
+        set1.setColor(Color.BLUE);
         set1.setValueTextColor(ColorTemplate.getHoloBlue());
         set1.setDrawValues(false);
 
-        BarData data = new BarData(set1);
+        set2 = new BarDataSet(distanceValues, "Distance ");
+        set2 = new BarDataSet(stepValues, "Step ");
+        set2.setAxisDependency(YAxis.AxisDependency.LEFT);
+        set2.setColor(Color.GREEN);
+        set2.setValueTextColor(ColorTemplate.getHoloBlue());
+        set2.setDrawValues(false);
+
+        BarData data = new BarData(set1, set2);
         data.setValueTextColor(Color.WHITE);
         data.setValueTextSize(9f);
 
         return data;
     }
 
+    private int getDailyStep (String date) {
+        int totalStep = 0;
+        List<StepDistance> stepList = database.readStepDistance(date);
+        for (int i = 0; i < stepList.size(); i++) {
+            totalStep += stepList.get(i).getStep();
+        }
+        return totalStep;
+    }
+
+    private float getDailyDistance (String date) {
+        int totalDistance = 0;
+        List<StepDistance> stepList = database.readStepDistance(date);
+        for (int i = 0; i < stepList.size(); i++) {
+            totalDistance += stepList.get(i).getDistance();
+        }
+        return totalDistance;
+    }
+
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+        database = new SQLiteCRUD(context);
+        database.openDatabase();
 //        if (context instanceof OnFragmentInteractionListener) {
 //            mListener = (OnFragmentInteractionListener) context;
 //        } else {
@@ -126,11 +162,15 @@ public class StepDistanceFragment extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
+        database.closeDatabase();
     }
 
     public void updateDate(String s, String e) {
         startingDate = s;
         endingDate = e;
+        mChart.setData(generateStepDistanceData(startingDate, endingDate));
+        mChart.notifyDataSetChanged();
+        mChart.invalidate();
     }
 
 }
