@@ -14,8 +14,8 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.location.Location;
-import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.provider.CallLog;
@@ -27,13 +27,9 @@ import android.support.annotation.Nullable;
 
 import android.util.Log;
 
-
-import com.fitbit.authentication.AuthenticationManager;
-import com.fitbit.fitbitcommon.network.BasicHttpRequest;
-import com.fitbit.fitbitcommon.network.BasicHttpRequestBuilder;
-import com.fitbit.fitbitcommon.network.BasicHttpResponse;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
@@ -44,18 +40,15 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 
-
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.lang.reflect.Type;
-import java.net.URL;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 
@@ -63,7 +56,7 @@ import java.util.concurrent.TimeUnit;
  * Created by henry on 2017-04-18.
  */
 
-public class PassiveMonService extends Service implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,LocationListener{
+public class PassiveMonService extends Service implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
     private GoogleApiClient googleApiClient;
     private boolean intentToGetLocation;
@@ -192,10 +185,6 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
             }
         }
 
-        StepDistance sd = getStepDistance();
-        if(sd != null){
-            database.createStepDistance(sd);
-        }
 
         database.closeDatabase();
 
@@ -434,50 +423,6 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
 
     @Override
     public void onLocationChanged(Location location) {
-
-    }
-
-    public StepDistance getStepDistance(){
-        if(!existSharedPref("fitbitToken")) return null;
-        String token = readSharedPref("fitbitToken");
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
-        String date = dateFormat.format(new Date());
-
-        new FitbitStepDistance().execute(date,token);
-
-        return new StepDistance(1,0,0);
-    }
-
-    private class FitbitStepDistance extends AsyncTask<String,Void,String>{
-
-        @Override
-        protected String doInBackground(String... strings) {
-            Log.e("FitbitServer","doInBackground");
-            BasicHttpRequest request = BasicHttpRequestBuilder.create()
-                    .setUrl("https://api.fitbit.com/1/user/-/activities/date/" + strings[0] +".json")
-                    .setContentType("application/json")
-                    .setAuthorization("Bearer " + strings[1].trim())
-                    .setMethod("GET")
-                    .build();
-
-            String result = null;
-            try {
-                final BasicHttpResponse response = request.execute();
-                final String responseBodyStr = response.getBodyAsString();
-
-
-
-
-            } catch (final IOException e) {
-            }
-            return result;
-        }
-
-        @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
-        }
-
 
     }
 }

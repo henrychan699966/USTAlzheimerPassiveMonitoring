@@ -15,7 +15,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.LineChart;
@@ -43,7 +45,7 @@ import java.util.List;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
-public class GraphPlotter extends AppCompatActivity {
+public class GraphPlotter extends AppCompatActivity implements View.OnClickListener {
 
     private SectionsPagerAdapter mSectionsPagerAdapter;
     private ViewPager mViewPager;
@@ -84,6 +86,30 @@ public class GraphPlotter extends AppCompatActivity {
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
+
+        ImageButton refreshButton = (ImageButton) findViewById(R.id.refreshButton);
+        refreshButton.setOnClickListener(this);
+    }
+
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.refreshButton:
+                EditText startDateText = (EditText) findViewById(R.id.startDate);
+                EditText endDateText = (EditText) findViewById(R.id.endDate);
+                startingDate = startDateText.getText().toString();
+                endingDate = endDateText.getText().toString();
+                if (checkDateValid(startingDate, endingDate)) {
+                    notifyViewPagerDataSetChanged();
+                }
+                break;
+            default:
+        }
+    }
+
+    private boolean checkDateValid(String s, String e) {
+//        TODO
+        return true;
     }
 
     public static class GraphFragment extends Fragment {
@@ -106,7 +132,6 @@ public class GraphPlotter extends AppCompatActivity {
             }
 
             args.putInt(GRAPH_CONTENT, sectionNumber);
-            args.putParcelableArray("PHONE_USAGE", puData);
             fragment.setArguments(args);
             return fragment;
         }
@@ -123,12 +148,9 @@ public class GraphPlotter extends AppCompatActivity {
                     c1.setVisibility(View.GONE);
                     PieChart chart1 = (PieChart) rootView.findViewById(R.id.chart2);
 
-                    PhoneUsage[] phoneUsages = (PhoneUsage[]) getArguments().getParcelableArray("PHONE_USAGE");
-
                     chart1.setCenterText("Phone Usage");
                     chart1.setUsePercentValues(true);
                     chart1.setRotationEnabled(false);
-                    chart1.setData(generatePhoneUsageData(phoneUsages));
                     chart1.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
                         @Override
                         public void onValueSelected(Entry e, Highlight h) {
@@ -295,7 +317,7 @@ public class GraphPlotter extends AppCompatActivity {
 
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
-        private final int NUM_OF_FRAGMENT = 3;
+        private final int FRAGMENT_COUNT = 3;
 
         public SectionsPagerAdapter(FragmentManager fm) {
             super(fm);
@@ -304,16 +326,13 @@ public class GraphPlotter extends AppCompatActivity {
         @Override
         public Fragment getItem(int position) {
 
-            EditText startDateText = (EditText) findViewById(R.id.startDate);
-            EditText endDateText = (EditText) findViewById(R.id.endDate);
-
             switch (position) {
                 case 0:
-                    return PhoneUsageFragment.newInstance(startDateText.getText().toString(), endDateText.getText().toString());
+                    return PhoneUsageFragment.newInstance(startingDate, endingDate);
                 case 1:
-                    return new StepDistanceFragment();
+                    return StepDistanceFragment.newInstance(startingDate, endingDate);
                 case 2:
-                    return new SleepWakeCycleFragment();
+                    return SleepWakeCycleFragment.newInstance(startingDate, endingDate);
                 default:
             }
             return null;
@@ -321,7 +340,19 @@ public class GraphPlotter extends AppCompatActivity {
 
         @Override
         public int getCount() {
-            return NUM_OF_FRAGMENT;
+            return FRAGMENT_COUNT;
+        }
+
+        @Override
+        public int getItemPosition(Object object) {
+            if (object instanceof PhoneUsageFragment) {
+                ((PhoneUsageFragment) object).updateDate(startingDate, endingDate);
+            } else if (object instanceof StepDistanceFragment) {
+                ((StepDistanceFragment) object).updateDate(startingDate, endingDate);
+            } else if (object instanceof SleepWakeCycleFragment) {
+                ((SleepWakeCycleFragment) object).updateDate(startingDate, endingDate);
+            }
+            return super.getItemPosition(object);
         }
 
         @Override
@@ -338,6 +369,10 @@ public class GraphPlotter extends AppCompatActivity {
             }
             return null;
         }
+    }
+
+    private void notifyViewPagerDataSetChanged() {
+        mSectionsPagerAdapter.notifyDataSetChanged();
     }
 
 }

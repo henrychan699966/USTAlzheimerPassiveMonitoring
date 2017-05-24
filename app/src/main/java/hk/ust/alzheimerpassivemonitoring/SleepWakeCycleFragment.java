@@ -22,7 +22,6 @@ public class SleepWakeCycleFragment extends Fragment {
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
-    private static final String[] SLEEP_STAGE = {"deep","light","rem","wake"};
 
     // TODO: Rename and change types of parameters
     private String mParam1;
