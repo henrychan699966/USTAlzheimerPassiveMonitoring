@@ -20,6 +20,7 @@ import com.github.mikephil.charting.utils.ColorTemplate;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -102,12 +103,38 @@ public class PhoneUsageFragment extends Fragment {
         long totalDur = 0;
         ArrayList<String> nameList = new ArrayList<>();
         ArrayList<Long> durationList = new ArrayList<>();
+        ArrayList<String> socialAppList = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.social_app)));
+
+        final int PHONECALL_INDEX = 0;
+        final int SOCIALAPP_INDEX = 1;
+        final int OTHERS_INDEX = 2;
+
+        nameList.add("PhoneCall");
+        durationList.add(0L);
+        nameList.add("SocialApp");
+        durationList.add(0L);
+        nameList.add("Others");
+        durationList.add(0L);
 
         for (long x = startDate.getTime(); x <= endDate.getTime(); x+= TimeUnit.DAYS.toMillis(1)) {
             String currentDate = sdf.format(x);
             List<PhoneUsage> pu = database.readPhoneUsage(currentDate);
             Log.e("PU",currentDate + " : " + Long.toString(x));
             if (pu != null) {
+                for (PhoneUsage ap : pu) {
+                    totalDur += (ap.getEndTime() - ap.getStartTime());
+                    if (ap.getActivity().contains("PhoneCall")) {
+                        durationList.set(PHONECALL_INDEX, durationList.get(PHONECALL_INDEX) - ap.getStartTime() + ap.getEndTime());
+                    } else if (socialAppList.contains(ap.getActivity())) {
+                        durationList.set(SOCIALAPP_INDEX,durationList.get(SOCIALAPP_INDEX) - ap.getStartTime() + ap.getEndTime());
+                    } else {
+                        durationList.set(OTHERS_INDEX,durationList.get(OTHERS_INDEX) - ap.getStartTime() + ap.getEndTime());
+                    }
+                }
+
+
+
+
                 for (PhoneUsage ap : pu) {
                     if (!nameList.contains(ap.getActivity())) {
                         nameList.add(ap.getActivity());

@@ -3,7 +3,11 @@
     <string name="title_activity_graph_plotter">GraphPlotter</string>
     <string name="action_settings">Settings</string>
     <string name="section_format">section: %1$d</string>
+    <string-array
+        name="social_app">
+        <item>WhatsApp</item>
+        <item>Facebook</item>
+        <item>Skype</item>
+    </string-array>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
