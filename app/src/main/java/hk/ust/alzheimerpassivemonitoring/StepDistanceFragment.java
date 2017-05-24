@@ -149,13 +149,14 @@ public class StepDistanceFragment extends Fragment {
             set2.setDrawValues(false);
 
             BarData data = new BarData(set1, set2);
-            data.groupBars(0.1f,0.08f,0.06f);
             data.setValueTextColor(Color.GRAY);
             data.setValueTextSize(9f);
             data.setBarWidth(0.4f);
 
+            mChart.groupBars(0.1f,0.08f,0.06f);
             mChart.setData(data);
         }
+        mChart.invalidate();
     }
 
     private int getDailyStep (String date) {
