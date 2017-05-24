@@ -80,6 +80,8 @@ public class SleepWakeCycleFragment extends Fragment {
         });
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         xAxis.setGranularity(1);
+        mChart.getAxisLeft().setDrawLabels(false);
+        mChart.getAxisRight().setDrawLabels(false);
 
         LimitLine ll1 = new LimitLine(0f, "Deep");
         ll1.setLineWidth(4f);

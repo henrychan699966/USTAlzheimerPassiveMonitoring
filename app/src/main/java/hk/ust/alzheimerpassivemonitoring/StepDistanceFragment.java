@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -134,8 +133,8 @@ public class StepDistanceFragment extends Fragment {
 
         for (long x = startDateDay; x <= endDateDay; x++) {
             String currentDate = sdf.format(TimeUnit.DAYS.toMillis((x)));
-            stepValues.add(new BarEntry(x, getDailyStep(currentDate)));
-            distanceValues.add(new BarEntry(x, getDailyDistance(currentDate)));
+            stepValues.add(new BarEntry(x, getStepDistanceList(currentDate).getStep()));
+            distanceValues.add(new BarEntry(x, getStepDistanceList(currentDate).getDistance()));
         }
 
         BarDataSet set1, set2;
@@ -169,17 +168,10 @@ public class StepDistanceFragment extends Fragment {
         mChart.invalidate();
     }
 
-    private int getDailyStep (String date) {
-        List<StepDistance> stepList = database.readStepDistance(date);
-        if (stepList == null) return 0;
-        return stepList.get(0).getStep();
-    }
-
-    private float getDailyDistance (String date) {
-        List<StepDistance> distanceList = database.readStepDistance(date);
-        Log.e("dailydist",Integer.toString(distanceList.size()));
-        if (distanceList == null) return 0;
-        return distanceList.get(0).getDistance();
+    private StepDistance getStepDistanceList (String date) {
+        List<StepDistance> sdList = database.readStepDistance(date);
+        if (sdList == null) return new StepDistance(0,0,0);
+        return database.readStepDistance(date).get(0);
     }
 
     @Override
