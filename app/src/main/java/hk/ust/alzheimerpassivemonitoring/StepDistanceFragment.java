@@ -76,16 +76,6 @@ public class StepDistanceFragment extends Fragment {
 
         mChart = (BarChart) rootView.findViewById(R.id.sdchart);
         mChart.getDescription().setEnabled(false);
-        mChart.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
-            @Override
-            public void onValueSelected(Entry e, Highlight h) {
-                if (e == null) return;
-                Toast.makeText(getContext(), "\""+e.getY()+"\"", Toast.LENGTH_SHORT).show();
-            }
-            @Override
-            public void onNothingSelected() {
-            }
-        });
 
         XAxis xAxis = mChart.getXAxis();
         xAxis.setValueFormatter(new IAxisValueFormatter() {
@@ -142,31 +132,22 @@ public class StepDistanceFragment extends Fragment {
 
         BarDataSet set1, set2;
 
-        if (mChart.getData() != null && mChart.getData().getDataSetCount() == 2) {
-            set1 = (BarDataSet) mChart.getData().getDataSetByIndex(0);
-            set2 = (BarDataSet) mChart.getData().getDataSetByIndex(1);
-            set1.setValues(stepValues);
-            set2.setValues(distanceValues);
-            mChart.getData().notifyDataChanged();
-            mChart.notifyDataSetChanged();
-        } else {
-            set1 = new BarDataSet(stepValues, "Step ");
-            set1.setAxisDependency(YAxis.AxisDependency.LEFT);
-            set1.setColor(Color.BLUE);
-            set1.setDrawValues(false);
+        set1 = new BarDataSet(stepValues, "Step ");
+        set1.setAxisDependency(YAxis.AxisDependency.LEFT);
+        set1.setColor(Color.BLUE);
+        set1.setDrawValues(false);
 
-            set2 = new BarDataSet(distanceValues, "Distance ");
-            set2.setAxisDependency(YAxis.AxisDependency.RIGHT);
-            set2.setColor(Color.GREEN);
-            set2.setDrawValues(false);
+        set2 = new BarDataSet(distanceValues, "Distance ");
+        set2.setAxisDependency(YAxis.AxisDependency.RIGHT);
+        set2.setColor(Color.GREEN);
+        set2.setDrawValues(false);
 
-            BarData data = new BarData(set1, set2);
-            data.setValueTextColor(Color.GRAY);
-            data.setValueTextSize(9f);
-            data.setBarWidth(0.4f);
+        BarData data = new BarData(set1, set2);
+        data.setValueTextColor(Color.GRAY);
+        data.setValueTextSize(9f);
+        data.setBarWidth(0.4f);
 
-            mChart.setData(data);
-        }
+        mChart.setData(data);
         mChart.groupBars(0.1f,0.08f,0.06f);
         mChart.invalidate();
     }
