@@ -76,6 +76,16 @@ public class StepDistanceFragment extends Fragment {
 
         mChart = (BarChart) rootView.findViewById(R.id.sdchart);
         mChart.getDescription().setEnabled(false);
+        mChart.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
+            @Override
+            public void onValueSelected(Entry e, Highlight h) {
+                if (e == null) return;
+                Toast.makeText(getContext(), "\""+e.getY()+"\"", Toast.LENGTH_SHORT).show();
+            }
+            @Override
+            public void onNothingSelected() {
+            }
+        });
 
         XAxis xAxis = mChart.getXAxis();
         xAxis.setValueFormatter(new IAxisValueFormatter() {
@@ -95,8 +105,10 @@ public class StepDistanceFragment extends Fragment {
             }
         });
 
-        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         mChart.setData(generateStepDistanceData(startingDate, endingDate));
+
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xAxis.setCenterAxisLabels(true);
         Legend l = mChart.getLegend();
         l.setTextSize(8f);
 
@@ -129,17 +141,19 @@ public class StepDistanceFragment extends Fragment {
             Log.e("data",Integer.toString(sd.getStep()) + " " + Float.toString(sd.getDistance()));
         }
 
-        BarDataSet set1 = new BarDataSet(stepValues, "Step ");
+        BarDataSet set1 = new BarDataSet(stepValues, "Step");
         set1.setAxisDependency(YAxis.AxisDependency.LEFT);
         set1.setColor(Color.BLUE);
 
-        BarDataSet set2 = new BarDataSet(distanceValues, "Distance ");
+        BarDataSet set2 = new BarDataSet(distanceValues, "Distance");
         set2.setAxisDependency(YAxis.AxisDependency.RIGHT);
         set2.setColor(Color.GREEN);
 
         BarData data = new BarData(set1, set2);
-        data.setBarWidth(0.5f);
-        
+        data.setDrawValues(false);
+        data.setBarWidth(0.45f);
+        data.groupBars(startDateDay, 0.06f, 0.02f);
+
         return data;
     }
 
