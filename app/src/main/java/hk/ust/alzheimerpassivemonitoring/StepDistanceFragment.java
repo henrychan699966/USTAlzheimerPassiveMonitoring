@@ -96,15 +96,15 @@ public class StepDistanceFragment extends Fragment {
         });
 
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-        generateStepDistanceData(startingDate, endingDate);
-
+        mChart.setData(generateStepDistanceData(startingDate, endingDate));
+        mChart.groupBars(0.1f,0.08f,0.06f);
         Legend l = mChart.getLegend();
         l.setTextSize(8f);
 
         return rootView;
     }
 
-    void generateStepDistanceData(String s, String e) {
+    BarData generateStepDistanceData(String s, String e) {
 
         ArrayList<BarEntry> stepValues = new ArrayList<>();
         ArrayList<BarEntry> distanceValues = new ArrayList<>();
@@ -135,21 +135,17 @@ public class StepDistanceFragment extends Fragment {
         set1 = new BarDataSet(stepValues, "Step ");
         set1.setAxisDependency(YAxis.AxisDependency.LEFT);
         set1.setColor(Color.BLUE);
-        set1.setDrawValues(false);
 
         set2 = new BarDataSet(distanceValues, "Distance ");
         set2.setAxisDependency(YAxis.AxisDependency.RIGHT);
         set2.setColor(Color.GREEN);
-        set2.setDrawValues(false);
 
         BarData data = new BarData(set1, set2);
         data.setValueTextColor(Color.GRAY);
         data.setValueTextSize(9f);
-        data.setBarWidth(0.4f);
-
-        mChart.setData(data);
-        mChart.groupBars(0.1f,0.08f,0.06f);
-        mChart.invalidate();
+        data.setBarWidth(0.5f);
+        
+        return data;
     }
 
     private StepDistance getStepDistanceList (String date) {
@@ -176,7 +172,7 @@ public class StepDistanceFragment extends Fragment {
     public void updateDate(String s, String e) {
         startingDate = s;
         endingDate = e;
-        generateStepDistanceData(startingDate, endingDate);
+        mChart.setData(generateStepDistanceData(startingDate, endingDate));
         mChart.notifyDataSetChanged();
         mChart.invalidate();
     }
