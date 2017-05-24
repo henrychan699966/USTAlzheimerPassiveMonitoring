@@ -1,12 +1,29 @@
 package hk.ust.alzheimerpassivemonitoring;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import com.github.mikephil.charting.charts.BarChart;
+import com.github.mikephil.charting.components.AxisBase;
+import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.data.BarData;
+import com.github.mikephil.charting.data.BarDataSet;
+import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.formatter.IAxisValueFormatter;
+import com.github.mikephil.charting.utils.ColorTemplate;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -17,35 +34,26 @@ import android.view.ViewGroup;
  * create an instance of this fragment.
  */
 public class StepDistanceFragment extends Fragment {
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    private static final String START_DATE = "start_date";
+    private static final String END_DATE = "end_date";
 
-    private OnFragmentInteractionListener mListener;
+    private SQLiteCRUD database;
+    private List<StepDistance> stepDistanceRecord;
+
+    private String startingDate;
+    private String endingDate;
 
     public StepDistanceFragment() {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment StepDistanceFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static StepDistanceFragment newInstance(String param1, String param2) {
+    public static StepDistanceFragment newInstance(String startDate, String endDate) {
         StepDistanceFragment fragment = new StepDistanceFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
+
+        args.putString(START_DATE, startDate);
+        args.putString(END_DATE, endDate);
         fragment.setArguments(args);
         return fragment;
     }
@@ -54,8 +62,8 @@ public class StepDistanceFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+            startingDate = getArguments().getString(START_DATE);
+            endingDate = getArguments().getString(END_DATE);
         }
     }
 
@@ -63,14 +71,45 @@ public class StepDistanceFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_step_distance, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_step_distance, container, false);
+
+        BarChart chart1 = (BarChart) rootView.findViewById(R.id.sdchart);
+        chart1.getXAxis().setValueFormatter(new IAxisValueFormatter() {
+            private SimpleDateFormat mFormat = new SimpleDateFormat("dd-MM");
+            @Override
+            public String getFormattedValue(float value, AxisBase axis) {
+
+                long millis = TimeUnit.DAYS.toMillis((long) value);
+                return mFormat.format(new Date(millis));
+            }
+        });
+        chart1.setData(generateStepDistanceData());
+
+        return rootView;
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
+    BarData generateStepDistanceData() {
+
+        ArrayList<BarEntry> values = new ArrayList<>();
+
+        long now = TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis());
+        Log.e("now", now+"");
+
+        for (float x = now-7; x < now; x++) {
+            values.add(new BarEntry(x, x/2 + (float) Math.pow(-1,x) * (x%4)));
         }
+
+        BarDataSet set1 = new BarDataSet(values, "DataSet1 ");
+        set1.setAxisDependency(YAxis.AxisDependency.LEFT);
+        set1.setColor(ColorTemplate.getHoloBlue());
+        set1.setValueTextColor(ColorTemplate.getHoloBlue());
+        set1.setDrawValues(false);
+
+        BarData data = new BarData(set1);
+        data.setValueTextColor(Color.WHITE);
+        data.setValueTextSize(9f);
+
+        return data;
     }
 
     @Override
@@ -87,21 +126,11 @@ public class StepDistanceFragment extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
-        mListener = null;
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
-    public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
-        void onFragmentInteraction(Uri uri);
+    public void updateDate(String s, String e) {
+        startingDate = s;
+        endingDate = e;
     }
+
 }

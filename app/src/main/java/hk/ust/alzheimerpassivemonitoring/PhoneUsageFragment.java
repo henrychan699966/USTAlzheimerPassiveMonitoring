@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,8 +37,6 @@ public class PhoneUsageFragment extends Fragment {
     private String startingDate;
     private String endingDate;
 
-    private OnFragmentInteractionListener mListener;
-
     public PhoneUsageFragment() {
         // Required empty public constructor
     }
@@ -66,11 +65,7 @@ public class PhoneUsageFragment extends Fragment {
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_phone_usage, container, false);
 
-        TextView st = (TextView) rootView.findViewById(R.id.st);
-        TextView et = (TextView) rootView.findViewById(R.id.et);
-
-        st.setText(startingDate);
-        et.setText(endingDate);
+        phoneUsageRecord = database.readPhoneUsage(endingDate);
 
         PieChart chart1 = (PieChart) rootView.findViewById(R.id.puchart);
         chart1.setCenterText("Phone Usage");
@@ -145,22 +140,11 @@ public class PhoneUsageFragment extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
-        mListener = null;
         database.closeDatabase();
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
-    public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
-        void onFragmentInteraction(Uri uri);
+    public void updateDate(String s, String e) {
+        startingDate = s;
+        endingDate = e;
     }
 }
