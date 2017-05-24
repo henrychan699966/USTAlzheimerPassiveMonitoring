@@ -215,10 +215,10 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
         } catch (IOException e) {
         }
 
-//        FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
-//        DatabaseReference databaseReference = firebaseDatabase.getReference("data");
-//
-//        databaseReference.setValue(extractDailyData(context));
+        FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
+        DatabaseReference databaseReference = firebaseDatabase.getReference("data");
+
+        databaseReference.setValue(extractDailyData(context));
     }
 
     //get app usage from s seconds ago to now

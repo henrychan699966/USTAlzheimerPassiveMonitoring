@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -176,6 +177,7 @@ public class StepDistanceFragment extends Fragment {
 
     private float getDailyDistance (String date) {
         List<StepDistance> distanceList = database.readStepDistance(date);
+        Log.e("dailydist",Integer.toString(distanceList.size()));
         if (distanceList == null) return 0;
         return distanceList.get(0).getDistance();
     }
