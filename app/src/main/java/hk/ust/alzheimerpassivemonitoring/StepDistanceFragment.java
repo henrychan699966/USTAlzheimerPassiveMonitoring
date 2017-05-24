@@ -97,7 +97,6 @@ public class StepDistanceFragment extends Fragment {
         });
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         mChart.setData(generateStepDistanceData(startingDate, endingDate));
-        mChart.getBarData().setBarWidth(0.4f);
 
         Legend l = mChart.getLegend();
         l.setTextSize(8f);
@@ -133,19 +132,18 @@ public class StepDistanceFragment extends Fragment {
         set1 = new BarDataSet(stepValues, "Step ");
         set1.setAxisDependency(YAxis.AxisDependency.LEFT);
         set1.setColor(Color.BLUE);
-        set1.setValueTextColor(ColorTemplate.getHoloBlue());
         set1.setDrawValues(false);
 
         set2 = new BarDataSet(distanceValues, "Distance ");
         set2.setAxisDependency(YAxis.AxisDependency.RIGHT);
         set2.setColor(Color.GREEN);
-        set2.setValueTextColor(ColorTemplate.getHoloBlue());
         set2.setDrawValues(false);
 
         BarData data = new BarData(set1, set2);
         data.groupBars(0.1f,0.08f,0.06f);
-        data.setValueTextColor(Color.WHITE);
+        data.setValueTextColor(Color.GRAY);
         data.setValueTextSize(9f);
+        data.setBarWidth(0.4f);
 
         return data;
     }
