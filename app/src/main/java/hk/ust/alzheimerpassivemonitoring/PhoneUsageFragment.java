@@ -101,7 +101,7 @@ public class PhoneUsageFragment extends Fragment {
             e1.printStackTrace();
         }
 
-        long totalSeconds = TimeUnit.DAYS.toSeconds((endDateMillis-startDateMillis+1));
+        long totalMillis = TimeUnit.DAYS.toMillis((endDateMillis-startDateMillis+1));
         long totalDur = 0;
         ArrayList<String> nameList = new ArrayList<>();
         ArrayList<Long> durationList = new ArrayList<>();
@@ -122,9 +122,8 @@ public class PhoneUsageFragment extends Fragment {
                 }
             }
         }
-        totalDur = TimeUnit.MILLISECONDS.toSeconds(totalDur);
         nameList.add("ScreenOff");
-        durationList.add(totalSeconds - totalDur);
+        durationList.add(totalMillis - totalDur);
 
         ArrayList<PieEntry> entries = new ArrayList<>();
 
