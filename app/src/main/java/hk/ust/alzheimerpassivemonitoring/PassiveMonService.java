@@ -438,7 +438,7 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
 
     }
 
-    public void getStepDistance(){
+    private void getStepDistance(){
         if(!existSharedPref("fitbitToken")) return;
         String token = readSharedPref("fitbitToken");
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -459,7 +459,7 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
 
         @Override
         protected StepDistance doInBackground(String... strings) {
-            Log.e("FitbitServer","doInBackground");
+
             BasicHttpRequest request = BasicHttpRequestBuilder.create()
                     .setUrl("https://api.fitbit.com/1/user/-/activities/date/" + strings[0] +".json")
                     .setContentType("application/json")
@@ -510,6 +510,87 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
         }
 
 
+    }
+
+    private void getSleepWakeCycle(){
+        if(!existSharedPref("fitbitToken")) return;
+        String token = readSharedPref("fitbitToken");
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        //String date = dateFormat.format(new Date());
+        String date = "2017-05-15";
+
+        new FitbitSleepWakeCycle(this).execute(date,token);
+
+        return;
+    }
+
+    private class FitbitSleepWakeCycle extends AsyncTask<String,Void,List<SleepWakeCycle>> {
+        private Context mContext;
+
+        public FitbitSleepWakeCycle(Context context) {
+            mContext = context;
+        }
+
+        @Override
+        protected List<SleepWakeCycle> doInBackground(String... strings) {
+
+            BasicHttpRequest request = BasicHttpRequestBuilder.create()
+                    .setUrl("https://api.fitbit.com/1.2/user/-/sleep/date/" + strings[0] +".json")
+                    .setContentType("application/json")
+                    .setAuthorization("Bearer " + strings[1].trim())
+                    .setMethod("GET")
+                    .build();
+
+            String result = "";
+            String responseBodyStr = null;
+            try {
+                final BasicHttpResponse response = request.execute();
+                responseBodyStr = response.getBodyAsString();
+
+            } catch (final IOException e) {
+            }
+
+            JsonParser jp = new JsonParser();
+            JsonObject jo;
+
+            try {
+                jo = (JsonObject) jp.parse(responseBodyStr);
+            } catch (RuntimeException e) {
+                jo = new JsonObject();
+            }
+
+            List<SleepWakeCycle> sleepWakeCycles = new ArrayList<>();
+            DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+
+
+            for(JsonElement je :jo.getAsJsonArray("sleep")){
+                for(JsonElement je2 : je.getAsJsonObject().getAsJsonObject("levels").getAsJsonArray("data")){
+                    long date = 0;
+                    try{
+                        date = df.parse(je2.getAsJsonObject().getAsJsonObject("datetime").getAsString()).getTime();
+                    }
+                    catch(ParseException e){
+
+                    }
+                    sleepWakeCycles.add(new SleepWakeCycle(date,date + je2.getAsJsonObject().getAsJsonObject("seconds").getAsInt(), je2.getAsJsonObject().getAsJsonObject("level").getAsString()));
+                }
+            }
+
+            return sleepWakeCycles;
+        }
+
+        @Override
+        protected void onPostExecute(List<SleepWakeCycle> sleepWakeCycles) {
+
+            SQLiteCRUD database = new SQLiteCRUD(mContext);
+            database.openDatabase();
+            for(SleepWakeCycle swc: sleepWakeCycles){
+                database.createSleepWakeCycle(swc);
+            }
+            database.closeDatabase();
+
+            super.onPostExecute(sleepWakeCycles);
+        }
     }
 
     public long dateToEpoch(String date){
