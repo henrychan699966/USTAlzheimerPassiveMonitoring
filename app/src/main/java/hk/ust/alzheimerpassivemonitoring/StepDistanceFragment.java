@@ -122,8 +122,8 @@ public class StepDistanceFragment extends Fragment {
             e1.printStackTrace();
         }
 
-        for (float x = startDateDay; x <= endDateDay; x++) {
-            String currentDate = sdf.format(TimeUnit.DAYS.toMillis(((long) x)));
+        for (long x = startDateDay; x <= endDateDay; x++) {
+            String currentDate = sdf.format(TimeUnit.DAYS.toMillis((x)));
             stepValues.add(new BarEntry(x, getDailyStep(currentDate)));
             distanceValues.add(new BarEntry(x, getDailyDistance(currentDate)));
         }
