@@ -106,7 +106,7 @@ public class PhoneUsageFragment extends Fragment {
             e1.printStackTrace();
         }
 
-        long totalMillis = TimeUnit.DAYS.toMillis((endDate.getTime()-startDate.getTime()+1));
+        long totalMillis = endDate.getTime()-startDate.getTime() + TimeUnit.DAYS.toMillis(1);
         long totalDur = 0;
         ArrayList<String> nameList = new ArrayList<>();
         ArrayList<Long> durationList = new ArrayList<>();

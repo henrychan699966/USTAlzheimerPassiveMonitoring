@@ -153,8 +153,9 @@ public class StepDistanceFragment extends Fragment {
             data.setValueTextSize(9f);
             data.setBarWidth(0.4f);
 
-            mChart.groupBars(0.1f,0.08f,0.06f);
+
             mChart.setData(data);
+            mChart.groupBars(0.1f,0.08f,0.06f);
         }
         mChart.invalidate();
     }
