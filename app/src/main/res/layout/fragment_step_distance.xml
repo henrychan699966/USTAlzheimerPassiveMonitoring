@@ -1,3 +1,6 @@
+<!--# COMP 4521    #  CHAN CHI HANG       20199170         chchanbq@connect.ust.hk-->
+<!--# COMP 4521    #  KO CHING WAI          20199168         cwko@connect.ust.hk-->
+
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"

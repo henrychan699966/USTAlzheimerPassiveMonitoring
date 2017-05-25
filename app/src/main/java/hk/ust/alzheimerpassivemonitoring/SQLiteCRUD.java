@@ -1,3 +1,8 @@
+/**
+ # COMP 4521    #  CHAN CHI HANG       20199170         chchanbq@connect.ust.hk
+ # COMP 4521    #  KO CHING WAI          20199168         cwko@connect.ust.hk
+ */
+
 package hk.ust.alzheimerpassivemonitoring;
 
 import android.content.ContentValues;
@@ -14,9 +19,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Created by henry on 2017-04-21.
- */
 //CRUD = create , read, update, delete
 public class SQLiteCRUD {
     private SQLiteDatabase db= null;

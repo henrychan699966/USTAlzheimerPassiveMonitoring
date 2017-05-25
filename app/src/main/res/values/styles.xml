@@ -1,6 +1,8 @@
+<!--# COMP 4521    #  CHAN CHI HANG       20199170         chchanbq@connect.ust.hk-->
+<!--# COMP 4521    #  KO CHING WAI          20199168         cwko@connect.ust.hk-->
+
 <resources>
 
-    <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>

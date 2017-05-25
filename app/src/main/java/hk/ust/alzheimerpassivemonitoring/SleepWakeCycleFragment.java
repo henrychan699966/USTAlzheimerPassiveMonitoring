@@ -1,3 +1,8 @@
+/**
+ # COMP 4521    #  CHAN CHI HANG       20199170         chchanbq@connect.ust.hk
+ # COMP 4521    #  KO CHING WAI          20199168         cwko@connect.ust.hk
+ */
+
 package hk.ust.alzheimerpassivemonitoring;
 
 import android.content.Context;
@@ -130,7 +135,6 @@ public class SleepWakeCycleFragment extends Fragment {
             startDateMillis = 0;
         }
         swValues.add(new Entry(TimeUnit.DAYS.toMillis((startDateMillis)), 3));
-        swValues.add(new Entry(TimeUnit.DAYS.toMillis((startDateMillis+1)), 0));
         swValues.addAll(getDailySleepWake(s));
 
         LineDataSet set1 = new LineDataSet(swValues, getString(R.string.data_sleepwake));

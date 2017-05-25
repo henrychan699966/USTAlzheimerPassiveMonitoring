@@ -1,13 +1,14 @@
+/**
+ # COMP 4521    #  CHAN CHI HANG       20199170         chchanbq@connect.ust.hk
+ # COMP 4521    #  KO CHING WAI          20199168         cwko@connect.ust.hk
+ */
+
 package hk.ust.alzheimerpassivemonitoring;
 
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-
-/**
- * Created by henry on 2017-04-20.
- */
 
 public class SQLiteHelper extends SQLiteOpenHelper{
 

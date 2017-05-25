@@ -1,11 +1,12 @@
+/**
+ # COMP 4521    #  CHAN CHI HANG       20199170         chchanbq@connect.ust.hk
+ # COMP 4521    #  KO CHING WAI          20199168         cwko@connect.ust.hk
+ */
+
 package hk.ust.alzheimerpassivemonitoring;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-
-/**
- * Created by henry on 2017-04-20.
- */
 
 public class PhoneUsage {
     private int eventID;

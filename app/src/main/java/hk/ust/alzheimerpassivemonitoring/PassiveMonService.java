@@ -1,3 +1,8 @@
+/**
+ # COMP 4521    #  CHAN CHI HANG       20199170         chchanbq@connect.ust.hk
+ # COMP 4521    #  KO CHING WAI          20199168         cwko@connect.ust.hk
+ */
+
 package hk.ust.alzheimerpassivemonitoring;
 
 import android.Manifest;
@@ -63,10 +68,6 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-
-/**
- * Created by henry on 2017-04-18.
- */
 
 public class PassiveMonService extends Service implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
