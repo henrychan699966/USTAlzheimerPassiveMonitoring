@@ -17,7 +17,6 @@ import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.provider.CallLog;
@@ -34,13 +33,10 @@ import com.fitbit.fitbitcommon.network.BasicHttpRequestBuilder;
 import com.fitbit.fitbitcommon.network.BasicHttpResponse;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
-import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -48,17 +44,10 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
 import java.lang.reflect.Type;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.security.cert.Certificate;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -67,8 +56,12 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLPeerUnverifiedException;
+
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 
 /**
@@ -609,12 +602,25 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
     }
 
     private class UploadFirebase extends AsyncTask<String,Void,Void>{
+        public final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 
         @Override
         protected Void doInBackground(String... strings) {
+            Log.e("HTTP",strings[0]);
 
+            OkHttpClient client = new OkHttpClient();
 
+            RequestBody body = RequestBody.create(JSON, strings[0]);
+            Request request = new Request.Builder()
+                    .url("https://ad-passive.firebaseio.com/data.json")
+                    .post(body)
+                    .build();
+            try{
+                client.newCall(request).execute();
+            }
+            catch (IOException e){
 
+            }
 
             return null;
         }
