@@ -205,18 +205,6 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
 
 
 
-        //Update Last upload time
-        FileOutputStream test = null;
-        try {
-            test = openFileOutput("test", Context.MODE_PRIVATE);
-        } catch (FileNotFoundException e) {
-        }
-
-        try {
-            test.write(extractDailyData(context).getBytes());
-        } catch (IOException e) {
-        }
-
         new UploadFirebase().execute(extractDailyData(context));
 
     }
