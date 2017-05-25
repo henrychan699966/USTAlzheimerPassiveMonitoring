@@ -71,7 +71,7 @@ public class PhoneUsageFragment extends Fragment {
         mChart.setCenterText("Phone Usage");
         mChart.setUsePercentValues(true);
         mChart.setRotationEnabled(false);
-        mChart.setData(generatePhoneUsageData(startingDate, endingDate));
+        generatePhoneUsageData(startingDate, endingDate);
 
         Legend l = mChart.getLegend();
         l.setVerticalAlignment(Legend.LegendVerticalAlignment.TOP);
@@ -85,7 +85,7 @@ public class PhoneUsageFragment extends Fragment {
         return rootView;
     }
 
-    PieData generatePhoneUsageData(String s, String e) {
+    void generatePhoneUsageData(String s, String e) {
 
         final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
         Date startDate;
@@ -105,6 +105,7 @@ public class PhoneUsageFragment extends Fragment {
         final ArrayList<String> nameList = new ArrayList<>();
         final ArrayList<Long> durationList = new ArrayList<>();
         final ArrayList<String> socialAppList = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.social_app)));
+        final ArrayList<PieEntry> entries = new ArrayList<>();
 
         final int PHONECALL_INDEX = 0;
         final int SOCIALAPP_INDEX = 1;
@@ -120,6 +121,7 @@ public class PhoneUsageFragment extends Fragment {
 
         final Date finalStartDate = startDate;
         final Date finalEndDate = endDate;
+        final long finalTotalMillis = totalMillis;
 
         new AsyncTask<Void, Void, Void>() {
             @Override
@@ -141,31 +143,32 @@ public class PhoneUsageFragment extends Fragment {
                         }
                     }
                 }
+                durationList.add(finalTotalMillis - totalDur[0]);
                 return null;
             }
+
+            @Override
+            protected void onPostExecute(Void a) {
+                for (int i = 0; i < nameList.size(); i++) {
+                    entries.add(new PieEntry(TimeUnit.MILLISECONDS.toSeconds(durationList.get(i)),nameList.get(i)));
+                }
+                PieDataSet dataSet = new PieDataSet(entries, getString(R.string.dataset_phoneusage));
+
+                dataSet.setDrawIcons(false);
+                dataSet.setColors(ColorTemplate.MATERIAL_COLORS);
+
+                dataSet.setSliceSpace(3f);
+                dataSet.setSelectionShift(5f);
+
+                PieData data = new PieData(dataSet);
+                data.setValueFormatter(new PercentFormatter());
+                data.setValueTextSize(10f);
+                data.setValueTextColor(Color.BLACK);
+
+                mChart.setData(data);
+                mChart.invalidate();
+            }
         }.execute();
-
-        durationList.add(totalMillis - totalDur[0]);
-        ArrayList<PieEntry> entries = new ArrayList<>();
-
-        for (int i = 0; i < nameList.size(); i++) {
-            entries.add(new PieEntry(TimeUnit.MILLISECONDS.toSeconds(durationList.get(i)),nameList.get(i)));
-        }
-
-        PieDataSet dataSet = new PieDataSet(entries, getString(R.string.dataset_phoneusage));
-
-        dataSet.setDrawIcons(false);
-        dataSet.setColors(ColorTemplate.MATERIAL_COLORS);
-
-        dataSet.setSliceSpace(3f);
-        dataSet.setSelectionShift(5f);
-
-        PieData data = new PieData(dataSet);
-        data.setValueFormatter(new PercentFormatter());
-        data.setValueTextSize(10f);
-        data.setValueTextColor(Color.BLACK);
-
-        return data;
     }
 
     @Override
@@ -184,7 +187,7 @@ public class PhoneUsageFragment extends Fragment {
     public void updateDate(String s, String e) {
         startingDate = s;
         endingDate = e;
-        mChart.setData(generatePhoneUsageData(startingDate, endingDate));
+        generatePhoneUsageData(startingDate, endingDate);
         mChart.notifyDataSetChanged();
         mChart.invalidate();
     }
