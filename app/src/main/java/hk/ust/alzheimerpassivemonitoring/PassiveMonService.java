@@ -52,8 +52,12 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.lang.reflect.Type;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.security.cert.Certificate;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -61,6 +65,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLPeerUnverifiedException;
 
 
 /**
@@ -214,6 +221,8 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
             test.write(extractDailyData(context).getBytes());
         } catch (IOException e) {
         }
+
+        new UploadFirebase().execute(extractDailyData(context));
 
     }
 
@@ -447,10 +456,11 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
         String token = readSharedPref("fitbitToken");
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         //String date = dateFormat.format(new Date());
-        String date = "2017-05-15";
-        String date2 = "2017-05-14";
+       // String date = "2017-05-15";
+        String date2 = "2017-05-16";
 
-        new FitbitStepDistance(this).execute(date,token);
+//        new FitbitStepDistance(this).execute(date,token);
+     //   try{Thread.sleep(5000);}catch (Exception e){}
         new FitbitStepDistance(this).execute(date2,token);
 
         return;
@@ -596,6 +606,18 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
             database.closeDatabase();
 
             super.onPostExecute(sleepWakeCycles);
+        }
+    }
+
+    private class UploadFirebase extends AsyncTask<String,Void,Void>{
+
+        @Override
+        protected Void doInBackground(String... strings) {
+
+
+
+
+            return null;
         }
     }
 

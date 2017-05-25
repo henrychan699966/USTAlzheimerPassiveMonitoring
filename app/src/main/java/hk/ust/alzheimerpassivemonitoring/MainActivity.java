@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Button graphButton = (Button) findViewById(R.id.graphButton);
         graphButton.setOnClickListener(this);
 
-
+        //FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
     }
 
 
