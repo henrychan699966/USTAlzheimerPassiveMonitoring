@@ -1,6 +1,5 @@
 package hk.ust.alzheimerpassivemonitoring;
 
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -9,39 +8,24 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.github.mikephil.charting.components.YAxis;
-import com.github.mikephil.charting.data.Entry;
-import com.github.mikephil.charting.data.LineData;
-import com.github.mikephil.charting.data.LineDataSet;
-import com.github.mikephil.charting.data.PieData;
-import com.github.mikephil.charting.data.PieDataSet;
-import com.github.mikephil.charting.data.PieEntry;
-import com.github.mikephil.charting.formatter.PercentFormatter;
-import com.github.mikephil.charting.utils.ColorTemplate;
-
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 public class GraphPlotter extends AppCompatActivity implements View.OnClickListener {
 
     private SectionsPagerAdapter mSectionsPagerAdapter;
-    private ViewPager mViewPager;
-    private SQLiteCRUD database;
-    private List<PhoneUsage> phoneUsageRecord;
     private String startingDate;
     private String endingDate;
+    private SimpleDateFormat mFormat = new SimpleDateFormat("yyyyMMdd");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,18 +37,12 @@ public class GraphPlotter extends AppCompatActivity implements View.OnClickListe
 
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
-        mViewPager = (ViewPager) findViewById(R.id.container);
+        ViewPager mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
-
-        database = new SQLiteCRUD(this);
-        database.openDatabase();
-        phoneUsageRecord = database.readPhoneUsage("20170426");
-        database.closeDatabase();
 
         EditText startDateText = (EditText) findViewById(R.id.startDate);
         EditText endDateText = (EditText) findViewById(R.id.endDate);
 
-        SimpleDateFormat mFormat = new SimpleDateFormat("yyyyMMdd");
         mFormat.setTimeZone(TimeZone.getDefault());
 
         startingDate = mFormat.format(new Date());
@@ -120,11 +98,10 @@ public class GraphPlotter extends AppCompatActivity implements View.OnClickListe
         final int MIN_INTERVAL = 0;
         long startDateMillis = 0;
         long endDateMillis = 0;
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
-        sdf.setTimeZone(TimeZone.getDefault());
+        mFormat.setTimeZone(TimeZone.getDefault());
         try {
-            Date startDate = sdf.parse(s);
-            Date endDate = sdf.parse(e);
+            Date startDate = mFormat.parse(s);
+            Date endDate = mFormat.parse(e);
             startDateMillis = TimeUnit.MILLISECONDS.toDays(startDate.getTime());
             endDateMillis = TimeUnit.MILLISECONDS.toDays(endDate.getTime());
         } catch (ParseException e1) {
@@ -143,100 +120,11 @@ public class GraphPlotter extends AppCompatActivity implements View.OnClickListe
         return true;
     }
 
-    static LineData generateStepDistanceData() {
-
-        ArrayList<Entry> values = new ArrayList<>();
-
-        long now = TimeUnit.MILLISECONDS.toDays(System.currentTimeMillis());
-        Log.e("now", now+"");
-
-        for (float x = now-7; x < now; x++) {
-            values.add(new Entry(x, x/2 + (float) Math.pow(-1,x) * (x%4)));
-        }
-
-        LineDataSet set1 = new LineDataSet(values, "DataSet1 ");
-        set1.setAxisDependency(YAxis.AxisDependency.LEFT);
-        set1.setColor(ColorTemplate.getHoloBlue());
-        set1.setValueTextColor(ColorTemplate.getHoloBlue());
-        set1.setLineWidth(1.5f);
-        set1.setDrawCircles(false);
-        set1.setDrawValues(false);
-        set1.setFillAlpha(65);
-        set1.setFillColor(ColorTemplate.getHoloBlue());
-        set1.setDrawCircleHole(false);
-
-        LineData data = new LineData(set1);
-        data.setValueTextColor(Color.WHITE);
-        data.setValueTextSize(9f);
-
-        return data;
-    }
-
-    static LineData generateSleepWakeData() {
-
-        ArrayList<Entry> values = new ArrayList<>();
-
-        for (float x = -8; x < 0; x++) {
-            values.add(new Entry(x, x*(-10)+x%3));
-        }
-        for (float x = 0; x < 16; x++) {
-            values.add(new Entry(x, 400+ (float) Math.pow(-1,x) *(x+x%4)));
-        }
-
-        LineDataSet set1 = new LineDataSet(values, "DataSet2 ");
-        set1.setAxisDependency(YAxis.AxisDependency.LEFT);
-        set1.setColor(ColorTemplate.getHoloBlue());
-        set1.setValueTextColor(ColorTemplate.getHoloBlue());
-        set1.setLineWidth(1.5f);
-        set1.setDrawCircles(false);
-        set1.setDrawValues(false);
-        set1.setFillAlpha(65);
-        set1.setFillColor(ColorTemplate.getHoloBlue());
-        set1.setDrawCircleHole(false);
-
-        LineData data = new LineData(set1);
-        data.setValueTextColor(Color.WHITE);
-        data.setValueTextSize(9f);
-
-        return data;
-    }
-
-    static PieData generatePhoneUsageData(PhoneUsage[] p) {
-
-        String[] socialApp = {"WhatsApp = 150min", "FaceBook = 150min"};
-        String[] others = {"Game = 110min"};
-
-        ArrayList<PieEntry> entries = new ArrayList<>();
-        entries.add(new PieEntry(1000, "Screen Off"));
-        entries.add(new PieEntry(30, "Phone Calls"));
-        entries.add(new PieEntry(300, "Social Apps", socialApp));
-        entries.add(new PieEntry(110, "Others", others));
-
-//        for (PhoneUsage aP : p) {
-//            entries.add(new PieEntry(aP.getStartTime() - aP.getEndTime(), aP.getActivity()));
-//        }
-
-        PieDataSet dataSet = new PieDataSet(entries, "Phone Usage");
-
-        dataSet.setDrawIcons(false);
-        dataSet.setColors(ColorTemplate.MATERIAL_COLORS);
-
-        dataSet.setSliceSpace(3f);
-        dataSet.setSelectionShift(5f);
-
-        PieData data = new PieData(dataSet);
-        data.setValueFormatter(new PercentFormatter());
-        data.setValueTextSize(11f);
-        data.setValueTextColor(Color.BLACK);
-
-        return data;
-    }
-
-    public class SectionsPagerAdapter extends FragmentPagerAdapter {
+    private class SectionsPagerAdapter extends FragmentPagerAdapter {
 
         private final int FRAGMENT_COUNT = 3;
 
-        public SectionsPagerAdapter(FragmentManager fm) {
+        SectionsPagerAdapter(FragmentManager fm) {
             super(fm);
         }
 
@@ -249,7 +137,7 @@ public class GraphPlotter extends AppCompatActivity implements View.OnClickListe
                 case 1:
                     return StepDistanceFragment.newInstance(startingDate, endingDate);
                 case 2:
-                    return SleepWakeCycleFragment.newInstance(startingDate, endingDate);
+                    return SleepWakeCycleFragment.newInstance(startingDate);
                 default:
             }
             return null;

@@ -2,6 +2,7 @@ package hk.ust.alzheimerpassivemonitoring;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -17,13 +18,12 @@ import com.github.mikephil.charting.data.PieEntry;
 import com.github.mikephil.charting.formatter.PercentFormatter;
 import com.github.mikephil.charting.utils.ColorTemplate;
 
-import java.sql.Time;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 public class PhoneUsageFragment extends Fragment {
@@ -32,7 +32,6 @@ public class PhoneUsageFragment extends Fragment {
     private static final String END_DATE = "end_date";
 
     private SQLiteCRUD database;
-    private List<PhoneUsage> phoneUsageRecord;
 
     private String startingDate;
     private String endingDate;
@@ -67,8 +66,6 @@ public class PhoneUsageFragment extends Fragment {
         // Inflate the layout for this fragment
         final View rootView = inflater.inflate(R.layout.fragment_phone_usage, container, false);
 
-        phoneUsageRecord = database.readPhoneUsage(endingDate);
-
         mChart = (PieChart) rootView.findViewById(R.id.puchart);
         mChart.getDescription().setEnabled(false);
         mChart.setCenterText("Phone Usage");
@@ -90,47 +87,65 @@ public class PhoneUsageFragment extends Fragment {
 
     PieData generatePhoneUsageData(String s, String e) {
 
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
-        //sdf.setTimeZone(TimeZone.getDefault());
-        long startDateMillis = 0;
-        long endDateMillis = 0;
-
-        Date startDate = null;
-        Date endDate = null;
+        final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+        Date startDate;
+        Date endDate;
+        long totalMillis;
         try {
             startDate = sdf.parse(s);
             endDate = sdf.parse(e);
-            startDateMillis = TimeUnit.MILLISECONDS.toDays(startDate.getTime());
-            endDateMillis = TimeUnit.MILLISECONDS.toDays(endDate.getTime());
+            totalMillis = endDate.getTime()-startDate.getTime() + TimeUnit.DAYS.toMillis(1);
         } catch (ParseException e1) {
-            e1.printStackTrace();
+            startDate = new Date();
+            endDate = startDate;
+            totalMillis = TimeUnit.DAYS.toMillis(1);
         }
 
-        long totalMillis = endDate.getTime()-startDate.getTime() + TimeUnit.DAYS.toMillis(1);
-        long totalDur = 0;
-        ArrayList<String> nameList = new ArrayList<>();
-        ArrayList<Long> durationList = new ArrayList<>();
+        final long[] totalDur = {0};
+        final ArrayList<String> nameList = new ArrayList<>();
+        final ArrayList<Long> durationList = new ArrayList<>();
+        final ArrayList<String> socialAppList = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.social_app)));
 
-        for (long x = startDate.getTime(); x <= endDate.getTime(); x+= TimeUnit.DAYS.toMillis(1)) {
-            String currentDate = sdf.format(x);
-            List<PhoneUsage> pu = database.readPhoneUsage(currentDate);
-            Log.e("PU",currentDate + " : " + Long.toString(x));
-            if (pu != null) {
-                for (PhoneUsage ap : pu) {
-                    if (!nameList.contains(ap.getActivity())) {
-                        nameList.add(ap.getActivity());
-                        durationList.add(ap.getEndTime() - ap.getStartTime());
-                    } else {
-                        int index = nameList.indexOf(ap.getActivity());
-                        durationList.set(index,durationList.get(index) - ap.getStartTime() + ap.getEndTime());
-                    }
-                    totalDur += (ap.getEndTime() - ap.getStartTime());
-                }
-            }
-        }
+        final int PHONECALL_INDEX = 0;
+        final int SOCIALAPP_INDEX = 1;
+        final int OTHERS_INDEX = 2;
+
+        nameList.add("PhoneCall");
+        durationList.add(0L);
+        nameList.add("SocialApp");
+        durationList.add(0L);
+        nameList.add("Others");
+        durationList.add(0L);
         nameList.add("ScreenOff");
-        durationList.add(totalMillis - totalDur);
 
+        final Date finalStartDate = startDate;
+        final Date finalEndDate = endDate;
+
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... voids) {
+                for (long x = finalStartDate.getTime(); x <= finalEndDate.getTime(); x+= TimeUnit.DAYS.toMillis(1)) {
+                    String currentDate = sdf.format(x);
+                    List<PhoneUsage> pu = database.readPhoneUsage(currentDate);
+                    Log.e("PU",currentDate + " : " + Long.toString(x));
+                    if (pu != null) {
+                        for (PhoneUsage ap : pu) {
+                            totalDur[0] += (ap.getEndTime() - ap.getStartTime());
+                            if (ap.getActivity().contains("PhoneCall")) {
+                                durationList.set(PHONECALL_INDEX, durationList.get(PHONECALL_INDEX) - ap.getStartTime() + ap.getEndTime());
+                            } else if (socialAppList.contains(ap.getActivity())) {
+                                durationList.set(SOCIALAPP_INDEX,durationList.get(SOCIALAPP_INDEX) - ap.getStartTime() + ap.getEndTime());
+                            } else {
+                                durationList.set(OTHERS_INDEX,durationList.get(OTHERS_INDEX) - ap.getStartTime() + ap.getEndTime());
+                            }
+                        }
+                    }
+                }
+                return null;
+            }
+        }.execute();
+
+        durationList.add(totalMillis - totalDur[0]);
         ArrayList<PieEntry> entries = new ArrayList<>();
 
         for (int i = 0; i < nameList.size(); i++) {

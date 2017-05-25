@@ -33,7 +33,6 @@ public class SleepWakeCycleFragment extends Fragment {
     private static final String[] SLEEP_CYCLE = {"deep","light","rem","wake"};
 
     private SQLiteCRUD database;
-    private List<SleepWakeCycle> sleepWakeCycleRecord;
 
     private String startingDate;
 
@@ -43,7 +42,7 @@ public class SleepWakeCycleFragment extends Fragment {
         // Required empty public constructor
     }
 
-    public static SleepWakeCycleFragment newInstance(String startDate, String endDate) {
+    public static SleepWakeCycleFragment newInstance(String startDate) {
         SleepWakeCycleFragment fragment = new SleepWakeCycleFragment();
         Bundle args = new Bundle();
         args.putString(START_DATE, startDate);
@@ -80,6 +79,8 @@ public class SleepWakeCycleFragment extends Fragment {
         });
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         xAxis.setGranularity(1);
+        mChart.getAxisLeft().setAxisMinimum(-0.5f);
+        mChart.getAxisLeft().setAxisMaximum(3.5f);
         mChart.getAxisLeft().setDrawLabels(false);
         mChart.getAxisRight().setDrawLabels(false);
 
@@ -119,14 +120,14 @@ public class SleepWakeCycleFragment extends Fragment {
     LineData generateSleepWakeData(String s) {
 
         ArrayList<Entry> swValues = new ArrayList<>();
-        long startDateMillis = 0;
+        long startDateMillis;
         try {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
             sdf.setTimeZone(TimeZone.getDefault());
             Date startDate = sdf.parse(s);
             startDateMillis = TimeUnit.MILLISECONDS.toDays(startDate.getTime());
         } catch (ParseException e1) {
-            e1.printStackTrace();
+            startDateMillis = 0;
         }
         swValues.add(new Entry(TimeUnit.DAYS.toMillis((startDateMillis)), 3));
         swValues.add(new Entry(TimeUnit.DAYS.toMillis((startDateMillis+1)), 0));
@@ -157,7 +158,7 @@ public class SleepWakeCycleFragment extends Fragment {
         long ref = 0;
         try {
             Date startDate = sdf.parse(date);
-            ref = TimeUnit.MILLISECONDS.toDays(startDate.getTime());
+            ref = startDate.getTime();
         } catch (ParseException e1) {
             e1.printStackTrace();
         }
@@ -165,8 +166,8 @@ public class SleepWakeCycleFragment extends Fragment {
         List<SleepWakeCycle> swList = database.readSleepWakeCycle(date);
         if (swList == null) return a;
         for (int i = 0; i < swList.size(); i++) {
-            long start = TimeUnit.MILLISECONDS.toSeconds(swList.get(i).getStartTime()-ref);
-            long end = TimeUnit.MILLISECONDS.toSeconds(swList.get(i).getEndTime()-ref)-1;
+            long start = swList.get(i).getStartTime()-ref;
+            long end = swList.get(i).getEndTime()-ref-TimeUnit.MILLISECONDS.toSeconds(1);
             a.add(new Entry(start, convertSleepStage(swList.get(i).getSleepStage())));
             a.add(new Entry(end, convertSleepStage(swList.get(i).getSleepStage())));
         }
