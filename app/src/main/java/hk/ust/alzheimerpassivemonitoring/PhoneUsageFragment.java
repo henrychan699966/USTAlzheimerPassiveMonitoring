@@ -110,13 +110,13 @@ public class PhoneUsageFragment extends Fragment {
         final int SOCIALAPP_INDEX = 1;
         final int OTHERS_INDEX = 2;
 
-        nameList.add("PhoneCall");
+        nameList.add(getString(R.string.data_phonecall));
         durationList.add(0L);
-        nameList.add("SocialApp");
+        nameList.add(getString(R.string.data_socialapp));
         durationList.add(0L);
-        nameList.add("Others");
+        nameList.add(getString(R.string.data_otherapp));
         durationList.add(0L);
-        nameList.add("ScreenOff");
+        nameList.add(getString(R.string.data_screenoff));
 
         final Date finalStartDate = startDate;
         final Date finalEndDate = endDate;
@@ -153,7 +153,7 @@ public class PhoneUsageFragment extends Fragment {
             entries.add(new PieEntry(TimeUnit.MILLISECONDS.toSeconds(durationList.get(i)),nameList.get(i)));
         }
 
-        PieDataSet dataSet = new PieDataSet(entries, "Phone Usage");
+        PieDataSet dataSet = new PieDataSet(entries, getString(R.string.dataset_phoneusage));
 
         dataSet.setDrawIcons(false);
         dataSet.setColors(ColorTemplate.MATERIAL_COLORS);

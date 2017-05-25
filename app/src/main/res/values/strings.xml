@@ -2,7 +2,29 @@
     <string name="app_name">AlzheimerPassiveMonitoring</string>
     <string name="title_activity_graph_plotter">GraphPlotter</string>
     <string name="action_settings">Settings</string>
-    <string name="section_format">section: %1$d</string>
+    <string name="main_button1">Graphs</string>
+    <string name="main_button2">Login</string>
+    <string name="date_hint">YYYYMMDD</string>
+    <string name="graph_text">TO</string>
+    <string name="refresh_button_desc">Refresh</string>
+    <string name="sleep_cycle_deep">Deep</string>
+    <string name="sleep_cycle_light">Light</string>
+    <string name="sleep_cycle_rem">REM</string>
+    <string name="sleep_cycle_wake">Wake</string>
+    <string name="data_step">Step</string>
+    <string name="data_distance">Distance</string>
+    <string name="data_sleepwake">Sleep-Wake</string>
+    <string name="data_phonecall">PhoneCall</string>
+    <string name="data_socialapp">SocialApp</string>
+    <string name="data_otherapp">Others</string>
+    <string name="data_screenoff">ScreenOff</string>
+    <string name="dataset_phoneusage">Phone Usage</string>
+    <string name="error_msg1">Error in start date</string>
+    <string name="error_msg2">Error in interval length</string>
+    <string name="error_msg3">Error in end date</string>
+    <string name="name_tab1">Phone Usage</string>
+    <string name="name_tab2">Step Distance</string>
+    <string name="name_tab3">Sleep-Wake Cycle</string>
     <string-array
         name="social_app">
         <item>WhatsApp</item>

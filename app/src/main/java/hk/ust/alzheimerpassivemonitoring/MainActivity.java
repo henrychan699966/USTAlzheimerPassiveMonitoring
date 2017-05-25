@@ -52,11 +52,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
 
-        //if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION},PERMISSION_REQUEST_FINE_LOCATION);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION},PERMISSION_REQUEST_FINE_LOCATION);
+            }
         }
-        //}
 
         //Check if an alarm has been scheduled, if not , start the passive monitoring service 1 min later
         Intent pendingService = new Intent(getApplicationContext(),PassiveMonService.class);
@@ -115,10 +115,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         editor.putString("fitbitToken",AuthenticationManager.getCurrentAccessToken().getAccessToken());
         editor.commit();
         Log.e("token",sharedPref.getString("fitbitToken",""));
-
-
-
-
     }
 
     @Override

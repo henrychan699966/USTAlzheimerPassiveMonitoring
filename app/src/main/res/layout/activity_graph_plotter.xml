@@ -44,7 +44,7 @@
             android:layout_below="@id/appbar"
             android:maxLength="8"
             android:ems="8"
-            android:hint="YYYYMMDD"
+            android:hint="@string/date_hint"
             android:layout_marginEnd="20dp"
             android:inputType="date" />
         <TextView
@@ -53,7 +53,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignBottom="@+id/startDate"
-            android:text="TO"
+            android:text="@string/graph_text"
             android:textSize="20sp" />
         <EditText
             android:id="@+id/endDate"
@@ -61,7 +61,7 @@
             android:layout_height="wrap_content"
             android:maxLength="8"
             android:ems="8"
-            android:hint="YYYYMMDD"
+            android:hint="@string/date_hint"
             android:inputType="date"
             android:layout_below="@+id/appbar"
             android:layout_toEndOf="@+id/t1"
@@ -72,7 +72,8 @@
             android:layout_height="wrap_content"
             android:layout_above="@+id/container"
             android:layout_toEndOf="@+id/endDate"
-            app:srcCompat="@android:drawable/ic_popup_sync" />
+            app:srcCompat="@android:drawable/ic_popup_sync"
+            android:contentDescription="@string/refresh_button_desc" />
         <android.support.v4.view.ViewPager
             android:id="@+id/container"
             android:layout_width="match_parent"

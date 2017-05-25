@@ -108,13 +108,13 @@ public class GraphPlotter extends AppCompatActivity implements View.OnClickListe
             e1.printStackTrace();
         }
         if (startDateMillis > endDateMillis) {
-            showToast("Error in start date");
+            showToast(getString(R.string.error_msg1));
             return false;
         } else if (endDateMillis-startDateMillis > MAX_DAY) {
-            showToast("Error in interval length");
+            showToast(getString(R.string.error_msg2));
             return false;
         } else if (TimeUnit.MILLISECONDS.toDays(new Date().getTime())-endDateMillis<MIN_INTERVAL) {
-            showToast("Error in end date");
+            showToast(getString(R.string.error_msg3));
             return false;
         }
         return true;
@@ -164,11 +164,11 @@ public class GraphPlotter extends AppCompatActivity implements View.OnClickListe
         public CharSequence getPageTitle(int position) {
             switch (position) {
                 case 0:
-                    return "Phone Usage";
+                    return getString(R.string.name_tab1);
                 case 1:
-                    return "Step Distance";
+                    return getString(R.string.name_tab2);
                 case 2:
-                    return "Sleep-Wake Cycle";
+                    return getString(R.string.name_tab3);
                 //                case 3:
 //                    return "Location Record";
             }
