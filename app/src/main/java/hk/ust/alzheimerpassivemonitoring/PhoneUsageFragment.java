@@ -2,6 +2,7 @@ package hk.ust.alzheimerpassivemonitoring;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -86,7 +87,7 @@ public class PhoneUsageFragment extends Fragment {
 
     PieData generatePhoneUsageData(String s, String e) {
 
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+        final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
         Date startDate;
         Date endDate;
         long totalMillis;
@@ -100,10 +101,10 @@ public class PhoneUsageFragment extends Fragment {
             totalMillis = TimeUnit.DAYS.toMillis(1);
         }
 
-        long totalDur = 0;
-        ArrayList<String> nameList = new ArrayList<>();
-        ArrayList<Long> durationList = new ArrayList<>();
-        ArrayList<String> socialAppList = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.social_app)));
+        final long[] totalDur = {0};
+        final ArrayList<String> nameList = new ArrayList<>();
+        final ArrayList<Long> durationList = new ArrayList<>();
+        final ArrayList<String> socialAppList = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.social_app)));
 
         final int PHONECALL_INDEX = 0;
         final int SOCIALAPP_INDEX = 1;
@@ -115,27 +116,36 @@ public class PhoneUsageFragment extends Fragment {
         durationList.add(0L);
         nameList.add("Others");
         durationList.add(0L);
+        nameList.add("ScreenOff");
 
-        for (long x = startDate.getTime(); x <= endDate.getTime(); x+= TimeUnit.DAYS.toMillis(1)) {
-            String currentDate = sdf.format(x);
-            List<PhoneUsage> pu = database.readPhoneUsage(currentDate);
-            Log.e("PU",currentDate + " : " + Long.toString(x));
-            if (pu != null) {
-                for (PhoneUsage ap : pu) {
-                    totalDur += (ap.getEndTime() - ap.getStartTime());
-                    if (ap.getActivity().contains("PhoneCall")) {
-                        durationList.set(PHONECALL_INDEX, durationList.get(PHONECALL_INDEX) - ap.getStartTime() + ap.getEndTime());
-                    } else if (socialAppList.contains(ap.getActivity())) {
-                        durationList.set(SOCIALAPP_INDEX,durationList.get(SOCIALAPP_INDEX) - ap.getStartTime() + ap.getEndTime());
-                    } else {
-                        durationList.set(OTHERS_INDEX,durationList.get(OTHERS_INDEX) - ap.getStartTime() + ap.getEndTime());
+        final Date finalStartDate = startDate;
+        final Date finalEndDate = endDate;
+
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... voids) {
+                for (long x = finalStartDate.getTime(); x <= finalEndDate.getTime(); x+= TimeUnit.DAYS.toMillis(1)) {
+                    String currentDate = sdf.format(x);
+                    List<PhoneUsage> pu = database.readPhoneUsage(currentDate);
+                    Log.e("PU",currentDate + " : " + Long.toString(x));
+                    if (pu != null) {
+                        for (PhoneUsage ap : pu) {
+                            totalDur[0] += (ap.getEndTime() - ap.getStartTime());
+                            if (ap.getActivity().contains("PhoneCall")) {
+                                durationList.set(PHONECALL_INDEX, durationList.get(PHONECALL_INDEX) - ap.getStartTime() + ap.getEndTime());
+                            } else if (socialAppList.contains(ap.getActivity())) {
+                                durationList.set(SOCIALAPP_INDEX,durationList.get(SOCIALAPP_INDEX) - ap.getStartTime() + ap.getEndTime());
+                            } else {
+                                durationList.set(OTHERS_INDEX,durationList.get(OTHERS_INDEX) - ap.getStartTime() + ap.getEndTime());
+                            }
+                        }
                     }
                 }
+                return null;
             }
-        }
-        nameList.add("ScreenOff");
-        durationList.add(totalMillis - totalDur);
+        }.execute();
 
+        durationList.add(totalMillis - totalDur[0]);
         ArrayList<PieEntry> entries = new ArrayList<>();
 
         for (int i = 0; i < nameList.size(); i++) {
