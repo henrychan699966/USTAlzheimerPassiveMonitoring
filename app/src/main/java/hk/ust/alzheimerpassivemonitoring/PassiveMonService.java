@@ -15,6 +15,7 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.location.Location;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.IBinder;
@@ -371,10 +372,12 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
     @Override
     public void onConnected(@Nullable Bundle bundle) {
         Log.e("getLocation","onConnected");
-        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            Log.e("getLocation","Permission Fail");
-            return;
-        }else{Log.e("getLocation","Permission OK");}
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                Log.e("getLocation","Permission Fail");
+                return;
+            } else {Log.e("getLocation","Permission OK");}
+        }
 
         LocationRequest locationRequest = LocationRequest.create()
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
@@ -462,8 +465,6 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
 //        new FitbitStepDistance(this).execute(date,token);
      //   try{Thread.sleep(5000);}catch (Exception e){}
         new FitbitStepDistance(this).execute(date2,token);
-
-        return;
     }
 
     private class FitbitStepDistance extends AsyncTask<String,Void,StepDistance> {
@@ -536,8 +537,6 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
         String date = "2017-05-15";
 
         new FitbitSleepWakeCycle(this).execute(date,token);
-
-        return;
     }
 
     private class FitbitSleepWakeCycle extends AsyncTask<String,Void,List<SleepWakeCycle>> {

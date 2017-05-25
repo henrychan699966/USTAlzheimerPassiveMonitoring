@@ -84,25 +84,25 @@ public class SleepWakeCycleFragment extends Fragment {
         mChart.getAxisLeft().setDrawLabels(false);
         mChart.getAxisRight().setDrawLabels(false);
 
-        LimitLine ll1 = new LimitLine(0f, "Deep");
+        LimitLine ll1 = new LimitLine(0f, getString(R.string.sleep_cycle_deep));
         ll1.setLineWidth(4f);
         ll1.enableDashedLine(10f, 10f, 0f);
         ll1.setLabelPosition(LimitLine.LimitLabelPosition.RIGHT_BOTTOM);
         ll1.setTextSize(8f);
 
-        LimitLine ll2 = new LimitLine(1f, "Light");
+        LimitLine ll2 = new LimitLine(1f, getString(R.string.sleep_cycle_light));
         ll2.setLineWidth(4f);
         ll2.enableDashedLine(5f, 5f, 0f);
         ll2.setLabelPosition(LimitLine.LimitLabelPosition.RIGHT_BOTTOM);
         ll2.setTextSize(8f);
 
-        LimitLine ll3 = new LimitLine(2f, "REM");
+        LimitLine ll3 = new LimitLine(2f, getString(R.string.sleep_cycle_rem));
         ll2.setLineWidth(4f);
         ll2.enableDashedLine(5f, 5f, 0f);
         ll2.setLabelPosition(LimitLine.LimitLabelPosition.RIGHT_BOTTOM);
         ll2.setTextSize(8f);
 
-        LimitLine ll4 = new LimitLine(3f, "Wake");
+        LimitLine ll4 = new LimitLine(3f, getString(R.string.sleep_cycle_wake));
         ll2.setLineWidth(4f);
         ll2.enableDashedLine(5f, 5f, 0f);
         ll2.setLabelPosition(LimitLine.LimitLabelPosition.RIGHT_BOTTOM);
@@ -133,7 +133,7 @@ public class SleepWakeCycleFragment extends Fragment {
         swValues.add(new Entry(TimeUnit.DAYS.toMillis((startDateMillis+1)), 0));
         swValues.addAll(getDailySleepWake(s));
 
-        LineDataSet set1 = new LineDataSet(swValues, "Sleep-Wake ");
+        LineDataSet set1 = new LineDataSet(swValues, getString(R.string.data_sleepwake));
         set1.setAxisDependency(YAxis.AxisDependency.LEFT);
         set1.setColor(ColorTemplate.getHoloBlue());
         set1.setValueTextColor(ColorTemplate.getHoloBlue());
