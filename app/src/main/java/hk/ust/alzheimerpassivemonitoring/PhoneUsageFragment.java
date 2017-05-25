@@ -139,6 +139,7 @@ public class PhoneUsageFragment extends Fragment {
                                 durationList.set(SOCIALAPP_INDEX,durationList.get(SOCIALAPP_INDEX) - ap.getStartTime() + ap.getEndTime());
                             } else {
                                 durationList.set(OTHERS_INDEX,durationList.get(OTHERS_INDEX) - ap.getStartTime() + ap.getEndTime());
+                                Log.e("PU",Long.toString(durationList.get(OTHERS_INDEX)));
                             }
                         }
                     }
