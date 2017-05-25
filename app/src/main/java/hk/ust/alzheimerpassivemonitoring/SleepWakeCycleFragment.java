@@ -79,6 +79,8 @@ public class SleepWakeCycleFragment extends Fragment {
         });
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         xAxis.setGranularity(1);
+        mChart.getAxisLeft().setAxisMinimum(-0.5f);
+        mChart.getAxisLeft().setAxisMaximum(3.5f);
         mChart.getAxisLeft().setDrawLabels(false);
         mChart.getAxisRight().setDrawLabels(false);
 

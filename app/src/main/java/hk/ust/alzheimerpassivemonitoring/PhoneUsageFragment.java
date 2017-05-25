@@ -131,20 +131,6 @@ public class PhoneUsageFragment extends Fragment {
                         durationList.set(OTHERS_INDEX,durationList.get(OTHERS_INDEX) - ap.getStartTime() + ap.getEndTime());
                     }
                 }
-
-
-
-
-                for (PhoneUsage ap : pu) {
-                    if (!nameList.contains(ap.getActivity())) {
-                        nameList.add(ap.getActivity());
-                        durationList.add(ap.getEndTime() - ap.getStartTime());
-                    } else {
-                        int index = nameList.indexOf(ap.getActivity());
-                        durationList.set(index,durationList.get(index) - ap.getStartTime() + ap.getEndTime());
-                    }
-                    totalDur += (ap.getEndTime() - ap.getStartTime());
-                }
             }
         }
         nameList.add("ScreenOff");
