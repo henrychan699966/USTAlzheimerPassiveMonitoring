@@ -39,19 +39,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-
-//        if (!AuthenticationManager.isLoggedIn()) {
-//            AuthenticationManager.login(this);
-//        }
-
+        if (!AuthenticationManager.isLoggedIn()) {
+            AuthenticationManager.login(this);
+        }
 
         setContentView(R.layout.activity_main);
         Button graphButton = (Button) findViewById(R.id.graphButton);
         graphButton.setOnClickListener(this);
-
-
     }
-
 
 
     public void requestPermission() {
@@ -115,13 +110,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             PendingIntent alarmIntent = PendingIntent.getService(this, 0, pendingService, 0);
             am.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 30 * 1000, alarmIntent);
         }
-
-
     }
 
     @Override
     public void onAuthFinished(AuthenticationResult result) {
 
     }
-
 }
