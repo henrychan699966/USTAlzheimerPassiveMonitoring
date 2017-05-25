@@ -1,3 +1,8 @@
+/**
+ # COMP 4521    #  CHAN CHI HANG       20199170         chchanbq@connect.ust.hk
+ # COMP 4521    #  KO CHING WAI          20199168         cwko@connect.ust.hk
+ */
+
 package hk.ust.alzheimerpassivemonitoring;
 
 import android.app.Activity;
@@ -15,10 +20,6 @@ import com.fitbit.authentication.ClientCredentials;
 import com.fitbit.authentication.Scope;
 
 import static com.fitbit.authentication.Scope.activity;
-
-/**
- * Created by henry on 2017-05-24.
- */
 
 public class alzheimerpassivemonitoring extends Application {
 
