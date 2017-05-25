@@ -39,55 +39,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-
-        if (!AuthenticationManager.isLoggedIn()) {
-            AuthenticationManager.login(this);
-        }
-
-
         setContentView(R.layout.activity_main);
-        Button graphButton = (Button) findViewById(R.id.graphButton);
-        graphButton.setOnClickListener(this);
-
-
-    }
-
-
-
-    public void requestPermission() {
-        Toast.makeText(this, "Need to request permission", Toast.LENGTH_SHORT).show();
-        startActivityForResult(new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS), PERMISSION_REQUEST_PACKAGE_USAGE_STATS);
-    }
-
-    public boolean hasPermission() {
-        AppOpsManager appOps = (AppOpsManager)getSystemService(Context.APP_OPS_SERVICE);
-        int mode = appOps.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS,android.os.Process.myUid(), getPackageName());
-        return mode == AppOpsManager.MODE_ALLOWED;
-    }
-
-
-    @Override
-    public void onClick(View view) {
-        switch (view.getId()) {
-            case R.id.graphButton:
-                startActivity(new Intent(this, GraphPlotter.class));
-                break;
-            default:
-        }
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.M)
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        AuthenticationManager.onActivityResult(requestCode, resultCode, data, (AuthenticationHandler) this);
-
-        AuthenticationManager.getCurrentAccessToken().getAccessToken();
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putString("fitbitToken",AuthenticationManager.getCurrentAccessToken().getAccessToken());
-        editor.commit();
-        Log.e("token",sharedPref.getString("fitbitToken",""));
 
         //get access to app usage permission
         if (!hasPermission()){
@@ -115,6 +67,56 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             PendingIntent alarmIntent = PendingIntent.getService(this, 0, pendingService, 0);
             am.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 30 * 1000, alarmIntent);
         }
+
+        Button graphButton = (Button) findViewById(R.id.graphButton);
+        graphButton.setOnClickListener(this);
+        Button loginButton = (Button) findViewById(R.id.loginButton);
+        loginButton.setOnClickListener(this);
+
+    }
+
+
+
+    public void requestPermission() {
+        Toast.makeText(this, "Need to request permission", Toast.LENGTH_SHORT).show();
+        startActivityForResult(new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS), PERMISSION_REQUEST_PACKAGE_USAGE_STATS);
+    }
+
+    public boolean hasPermission() {
+        AppOpsManager appOps = (AppOpsManager)getSystemService(Context.APP_OPS_SERVICE);
+        int mode = appOps.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS,android.os.Process.myUid(), getPackageName());
+        return mode == AppOpsManager.MODE_ALLOWED;
+    }
+
+
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.graphButton:
+                startActivity(new Intent(this, GraphPlotter.class));
+                break;
+            case R.id.loginButton:
+                if (!AuthenticationManager.isLoggedIn()) {
+                    AuthenticationManager.login(this);
+                }
+            default:
+        }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        AuthenticationManager.onActivityResult(requestCode, resultCode, data, (AuthenticationHandler) this);
+
+        AuthenticationManager.getCurrentAccessToken().getAccessToken();
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString("fitbitToken",AuthenticationManager.getCurrentAccessToken().getAccessToken());
+        editor.commit();
+        Log.e("token",sharedPref.getString("fitbitToken",""));
+
+
 
 
     }
