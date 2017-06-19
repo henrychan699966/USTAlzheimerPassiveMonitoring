@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/AlzheimerPassiveMonitoring.iml" filepath="$PROJECT_DIR$/AlzheimerPassiveMonitoring.iml" />
-      <module fileurl="file://$PROJECT_DIR$/USTAlzheimerPassiveMonitoring.iml" filepath="$PROJECT_DIR$/USTAlzheimerPassiveMonitoring.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/fitbitapi/fitbitapi.iml" filepath="$PROJECT_DIR$/fitbitapi/fitbitapi.iml" />
       <module fileurl="file://$PROJECT_DIR$/fitbitauth/fitbitauth.iml" filepath="$PROJECT_DIR$/fitbitauth/fitbitauth.iml" />

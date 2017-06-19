@@ -235,6 +235,53 @@ public class SQLiteCRUD {
         return records;
     }
 
+    public boolean createHeartRate(HeartRate hr){
+        ContentValues record = new ContentValues();
+        record.put("RecordTime",hr.getRecordTime());
+        record.put("HeartRate",hr.getHeartRate());
+
+        long insertID = db.insert("HeartRate",null,record);
+        if(insertID == -1) return false;
+        return true;
+    }
+
+    public List<HeartRate> readHeartRate(String date){
+
+        Cursor cursor = db.query("HeartRate",null,"RecordTime > " + dateToEpoch(date) + " and RecordTime < "+ (dateToEpoch(date)+ TimeUnit.DAYS.toMillis(1)), null, null, null, null);
+        if(cursor.getCount() > 0){
+            cursor.moveToFirst();
+        }
+        else return null;
+
+        List<HeartRate> records = new ArrayList<>();
+        while (!cursor.isAfterLast()) {
+            HeartRate hr = new HeartRate(cursor.getLong(0), cursor.getInt(1));
+            records.add(hr);
+            cursor.moveToNext();
+        }
+        cursor.close();
+        return records;
+    }
+
+    //read all records since recordTime, pass 0 for all records without constraints
+    public List<HeartRate> readAllHeartRate(long startTime){
+        Cursor cursor = db.query("HeartRate",null,"RecordTime > " + startTime, null, null, null, null);
+        if(cursor.getCount() > 0){
+            cursor.moveToFirst();
+        }
+        else return null;
+
+        List<HeartRate> records = new ArrayList<>();
+        while (!cursor.isAfterLast()) {
+            HeartRate hr = new HeartRate(cursor.getLong(0), cursor.getInt(1));
+            records.add(hr);
+            cursor.moveToNext();
+        }
+
+        cursor.close();
+        return records;
+    }
+
     public long dateToEpoch(String date){
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
         Date d;

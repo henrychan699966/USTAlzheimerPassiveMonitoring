@@ -23,11 +23,14 @@ public class SQLiteHelper extends SQLiteOpenHelper{
             "CREATE TABLE PhoneUsage (EventID INTEGER PRIMARY KEY AUTOINCREMENT, Activity VARCHAR(40), StartTime BIGINT, EndTime BIGINT);";
     private static final String CREATE_TABLE_SleepWakeCycle =
             "CREATE TABLE SleepWakeCycle (StartTime BIGINT PRIMARY KEY, EndTime BIGINT, SleepStage VARCHAR(5));";
+    private static final String CREATE_TABLE_HeartRate =
+            "CREATE TABLE HeartRate (RecordTime BIGINT PRIMARY KEY, HeartRate INTEGER);";
 
     private static final String DROP_TABLE_StepDistance= "DROP TABLE StepDistance;";
     private static final String DROP_TABLE_LocationRecord = "DROP TABLE LocationRecord;";
     private static final String DROP_TABLE_PhoneUsage = "DROP TABLE PhoneUsage;";
     private static final String DROP_TABLE_SleepWakeCycle = "DROP TABLE SleepWakeCycle;";
+    private static final String DROP_TABLE_HeartRate = "DROP TABLE HeartRate;";
 
     public SQLiteHelper(Context context) {
         super(context, databaseName, null, version);
@@ -39,6 +42,7 @@ public class SQLiteHelper extends SQLiteOpenHelper{
         sqLiteDatabase.execSQL(CREATE_TABLE_LocationRecord);
         sqLiteDatabase.execSQL(CREATE_TABLE_PhoneUsage);
         sqLiteDatabase.execSQL(CREATE_TABLE_SleepWakeCycle);
+        sqLiteDatabase.execSQL(CREATE_TABLE_HeartRate);
     }
 
     @Override
@@ -47,6 +51,7 @@ public class SQLiteHelper extends SQLiteOpenHelper{
         sqLiteDatabase.execSQL(DROP_TABLE_LocationRecord);
         sqLiteDatabase.execSQL(DROP_TABLE_PhoneUsage);
         sqLiteDatabase.execSQL(DROP_TABLE_SleepWakeCycle);
+        sqLiteDatabase.execSQL(DROP_TABLE_HeartRate);
         onCreate(sqLiteDatabase);
     }
 
