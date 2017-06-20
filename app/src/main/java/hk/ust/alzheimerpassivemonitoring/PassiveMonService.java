@@ -58,7 +58,10 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 
@@ -263,10 +266,9 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
         am.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + s * 1000, alarmIntent);
     }
 
-    private String extractDailyData(Context context) {
-        String[] s = new String[4];
-
-
+    private Map<String,String> extractDailyData(Context context) {
+        String[] s = new String[5];
+        String[] tableName = {"PhoneUsage","StepDistance","LocationRecord","SleepWakeCycle","HeartRate"};
 
         SQLiteCRUD database = new SQLiteCRUD(context);
         database.openDatabase();
@@ -286,30 +288,30 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
         type = new TypeToken<List<SleepWakeCycle>>() {
         }.getType();
         s[3] = new Gson().toJson(database.readAllSleepWakeCycle(0), type);
+
+        type = new TypeToken<List<HeartRate>>() {
+        }.getType();
+        s[4] = new Gson().toJson(database.readAllHeartRate(0), type);
         database.closeDatabase();
 
-        JsonParser jp = new JsonParser();
-        JsonArray[] ja = new JsonArray[4];
-        for (int i = 0; i < 4; i++) {
-            try {
-                ja[i] = (JsonArray) jp.parse(s[i]);
-            } catch (RuntimeException e) {
-                ja[i] = new JsonArray();
+        JsonParser jsonParser = new JsonParser();
+        Map<String,String> data = new HashMap<>();
+
+        for (int i = 0; i < s.length;i++){
+            JsonArray jsonArray = null;
+            try{
+                jsonArray = (JsonArray) jsonParser.parse(s[i]);
             }
+            catch(RuntimeException e){
+                jsonArray = new JsonArray();
+            }
+            for(JsonElement jsonElement : jsonArray){
+                jsonElement.getAsJsonObject().addProperty("UserID","123456789");
+            }
+             data.put(tableName[i],new Gson().toJson(jsonArray));
         }
 
-
-        JsonObject data = new JsonObject();
-        data.add("PhoneUsage", ja[0]);
-        data.add("StepDistance", ja[1]);
-        data.add("LocationRecord", ja[2]);
-        data.add("SleepWakeCycle", ja[3]);
-
-        JsonObject output = new JsonObject();
-        output.add("data", data);
-        output.addProperty("UserID", "12345678");
-
-        return new Gson().toJson(output);
+        return data;
     }
 
     //get call log s seconds before current time
@@ -590,26 +592,28 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
         }
     }
 
-    private class UploadFirebase extends AsyncTask<String,Void,Void>{
+    private class UploadFirebase extends AsyncTask<Map<String, String>,Void,Void>{
         public final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 
         @Override
-        protected Void doInBackground(String... strings) {
-            Log.e("HTTP",strings[0]);
+        protected Void doInBackground(Map<String,String>... data) {
 
             OkHttpClient client = new OkHttpClient();
 
-            RequestBody body = RequestBody.create(JSON, strings[0]);
-            Request request = new Request.Builder()
-                    .url("https://ad-passive.firebaseio.com/data.json")
-                    .post(body)
-                    .build();
-            try{
-                client.newCall(request).execute();
-            }
-            catch (IOException e){
+            for(Map.Entry<String,String> entry : data[0].entrySet()){
+                RequestBody body = RequestBody.create(JSON, entry.getValue());
+                Request request = new Request.Builder()
+                        .url("https://ad-passive.firebaseio.com/data/" + entry.getKey() + ".json")
+                        .post(body)
+                        .build();
+                try{
+                    client.newCall(request).execute();
+                }
+                catch (IOException e){
 
+                }
             }
+
 
             return null;
         }
