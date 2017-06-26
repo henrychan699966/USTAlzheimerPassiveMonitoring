@@ -42,6 +42,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".LoginFitbitActivity">
+
+        </activity>
 
         <receiver android:name=".PassiveMonBroadcastReceiver">
             <intent-filter>

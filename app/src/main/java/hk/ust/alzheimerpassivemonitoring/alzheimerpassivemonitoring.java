@@ -50,7 +50,7 @@ public class alzheimerpassivemonitoring extends Application {
                     .setTokenExpiresIn(2592000L) // 30 days
                     .setBeforeLoginActivity(new Intent(context, mainActivityClass))
                     .addRequiredScopes(Scope.profile, Scope.settings)
-                    .addOptionalScopes(activity, Scope.weight, Scope.sleep)
+                    .addOptionalScopes(activity, Scope.weight, Scope.sleep, Scope.heartrate)
                     .setLogoutOnAuthFailure(true)
 
                     .build();

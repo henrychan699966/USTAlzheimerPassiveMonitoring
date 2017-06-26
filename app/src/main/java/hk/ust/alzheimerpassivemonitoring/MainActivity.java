@@ -98,7 +98,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.loginButton:
                 if (!AuthenticationManager.isLoggedIn()) {
-                    AuthenticationManager.login(this);
+//                  AuthenticationManager.login(this);
+                    startActivity(new Intent(this,LoginFitbitActivity.class));
                 }
             default:
         }
@@ -108,15 +109,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        AuthenticationManager.onActivityResult(requestCode, resultCode, data, (AuthenticationHandler) this);
+        if(resultCode == 1){
+            AuthenticationManager.onActivityResult(requestCode, resultCode, data, (AuthenticationHandler) this);
 
-        AuthenticationManager.getCurrentAccessToken().getAccessToken();
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putString("fitbitToken",AuthenticationManager.getCurrentAccessToken().getAccessToken());
-        editor.commit();
-        Log.e("token",sharedPref.getString("fitbitToken",""));
+            AuthenticationManager.getCurrentAccessToken().getAccessToken();
+            SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+            SharedPreferences.Editor editor = sharedPref.edit();
+            editor.putString("fitbitToken",AuthenticationManager.getCurrentAccessToken().getAccessToken());
+            editor.commit();
+            Log.e("token",sharedPref.getString("fitbitToken",""));
+        }
+
     }
+
 
     @Override
     public void onAuthFinished(AuthenticationResult result) {
