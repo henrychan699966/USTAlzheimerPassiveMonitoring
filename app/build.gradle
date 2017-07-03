@@ -38,9 +38,6 @@ dependencies {
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    compile project(':fitbitapi')
-    compile project(':fitbitauth')
-    compile project(':fitbitcommon')
     compile 'com.github.PhilJay:MPAndroidChart:v3.0.2'
     compile 'com.google.code.gson:gson:2.8.0'
     compile 'com.google.android.gms:play-services-location:10.2.1'

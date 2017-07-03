@@ -33,9 +33,6 @@ import android.support.annotation.Nullable;
 
 import android.util.Log;
 
-import com.fitbit.fitbitcommon.network.BasicHttpRequest;
-import com.fitbit.fitbitcommon.network.BasicHttpRequestBuilder;
-import com.fitbit.fitbitcommon.network.BasicHttpResponse;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -78,8 +75,8 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
     private boolean intentToGetLocation;
     private boolean intentToDoDailyTask;
 
-    private static final int LOCATION_RETRIEVE_INTERVAL = 25; //seconds
-    private static final int DAILY_TASK_INTERVAL = 60; //seconds
+    private static final int LOCATION_RETRIEVE_INTERVAL = 1800; //seconds
+    private static final int DAILY_TASK_INTERVAL = 3600; //seconds
     private static final String LAST_UPLOAD_TIME = "LastUploadTime";
     private static final String LAST_LOCATION_TIME = "LastLocationTime";
 
@@ -461,28 +458,29 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
         @Override
         protected StepDistance doInBackground(String... strings) {
 
-            BasicHttpRequest request = BasicHttpRequestBuilder.create()
-                    .setUrl("https://api.fitbit.com/1/user/-/activities/date/" + strings[0] +".json")
-                    .setContentType("application/json")
-                    .setAuthorization("Bearer " + strings[1].trim())
-                    .setMethod("GET")
+            OkHttpClient client = new OkHttpClient();
+
+            Request request = new Request.Builder()
+                    .url("https://api.fitbit.com/1/user/-/activities/date/" + strings[0] +".json")
+                    .header("Authorization","Bearer "+ strings[1].trim())
                     .build();
 
-            String result = "";
-            String responseBodyStr = null;
-            try {
-                final BasicHttpResponse response = request.execute();
-                responseBodyStr = response.getBodyAsString();
-
-            } catch (final IOException e) {
+            Response response =null;
+            try{
+                response = client.newCall(request).execute();
             }
+            catch (IOException e){
+
+            }
+
+            String result = "";
 
             JsonParser jp = new JsonParser();
             JsonObject jo;
 
             try {
-                jo = (JsonObject) jp.parse(responseBodyStr);
-            } catch (RuntimeException e) {
+                jo = (JsonObject) jp.parse(response.body().string());
+            } catch (IOException e) {
                 jo = new JsonObject();
             }
 
@@ -533,28 +531,27 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
         @Override
         protected List<SleepWakeCycle> doInBackground(String... strings) {
 
-            BasicHttpRequest request = BasicHttpRequestBuilder.create()
-                    .setUrl("https://api.fitbit.com/1.2/user/-/sleep/date/" + strings[0] +".json")
-                    .setContentType("application/json")
-                    .setAuthorization("Bearer " + strings[1].trim())
-                    .setMethod("GET")
+            OkHttpClient client = new OkHttpClient();
+
+            Request request = new Request.Builder()
+                    .url("https://api.fitbit.com/1.2/user/-/sleep/date/" + strings[0] +".json")
+                    .header("Authorization","Bearer "+ strings[1].trim())
                     .build();
 
-            String result = "";
-            String responseBodyStr = null;
-            try {
-                final BasicHttpResponse response = request.execute();
-                responseBodyStr = response.getBodyAsString();
+            Response response =null;
+            try{
+                response = client.newCall(request).execute();
+            }
+            catch (IOException e){
 
-            } catch (final IOException e) {
             }
 
             JsonParser jp = new JsonParser();
             JsonObject jo;
 
             try {
-                jo = (JsonObject) jp.parse(responseBodyStr);
-            } catch (RuntimeException e) {
+                jo = (JsonObject) jp.parse(response.body().string());
+            } catch (IOException e) {
                 jo = new JsonObject();
             }
 

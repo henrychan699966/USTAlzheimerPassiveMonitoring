@@ -24,12 +24,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
-import com.fitbit.authentication.AuthenticationHandler;
-import com.fitbit.authentication.AuthenticationManager;
-import com.fitbit.authentication.AuthenticationResult;
 
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener, AuthenticationHandler {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener{
 
     private static final int PERMISSIONS_REQUEST_READ_CALL_LOG = 200;
     private static final int PERMISSION_REQUEST_PACKAGE_USAGE_STATS = 100;
@@ -41,6 +38,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
+
+        Intent intent = getIntent();
+        if(intent.hasExtra("Test"))Log.e("Test",intent.getStringExtra("Test"));
+
 
         //get access to app usage permission
         if (!hasPermission()){
@@ -97,35 +98,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 startActivity(new Intent(this, GraphPlotter.class));
                 break;
             case R.id.loginButton:
-                if (!AuthenticationManager.isLoggedIn()) {
-//                  AuthenticationManager.login(this);
                     startActivity(new Intent(this,LoginFitbitActivity.class));
-                }
             default:
         }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.M)
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if(resultCode == 1){
-            AuthenticationManager.onActivityResult(requestCode, resultCode, data, (AuthenticationHandler) this);
-
-            AuthenticationManager.getCurrentAccessToken().getAccessToken();
-            SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-            SharedPreferences.Editor editor = sharedPref.edit();
-            editor.putString("fitbitToken",AuthenticationManager.getCurrentAccessToken().getAccessToken());
-            editor.commit();
-            Log.e("token",sharedPref.getString("fitbitToken",""));
-        }
-
-    }
-
-
-    @Override
-    public void onAuthFinished(AuthenticationResult result) {
-
-    }
 
 }
