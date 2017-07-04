@@ -3,7 +3,7 @@
  # COMP 4521    #  KO CHING WAI          20199168         cwko@connect.ust.hk
  */
 
-package hk.ust.alzheimerpassivemonitoring;
+package hk.ust.aed.alzheimerpassivemonitoring;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -16,15 +16,15 @@ public class SQLiteHelper extends SQLiteOpenHelper{
     private static final int version = 1;
 
     private static final String CREATE_TABLE_StepDistance =
-            "CREATE TABLE StepDistance (Date BIGINT PRIMARY KEY, Step INTEGER, Distance REAL);";
+            "CREATE TABLE StepDistance (ID INTEGER PRIMARY KEY AUTOINCREMENT, Date BIGINT, Step INTEGER, Distance REAL);";
     private static final String CREATE_TABLE_LocationRecord =
-            "CREATE TABLE LocationRecord (RecordTime BIGINT PRIMARY KEY, Latitude REAL, Longitude REAL);";
+            "CREATE TABLE LocationRecord (ID INTEGER PRIMARY KEY AUTOINCREMENT, RecordTime BIGINT, Latitude REAL, Longitude REAL);";
     private static final String CREATE_TABLE_PhoneUsage =
-            "CREATE TABLE PhoneUsage (EventID INTEGER PRIMARY KEY AUTOINCREMENT, Activity VARCHAR(40), StartTime BIGINT, EndTime BIGINT);";
+            "CREATE TABLE PhoneUsage (ID INTEGER PRIMARY KEY AUTOINCREMENT, Activity VARCHAR(40), StartTime BIGINT, EndTime BIGINT);";
     private static final String CREATE_TABLE_SleepWakeCycle =
-            "CREATE TABLE SleepWakeCycle (StartTime BIGINT PRIMARY KEY, EndTime BIGINT, SleepStage VARCHAR(5));";
+            "CREATE TABLE SleepWakeCycle (ID INTEGER PRIMARY KEY AUTOINCREMENT, StartTime BIGINT, EndTime BIGINT, SleepStage VARCHAR(5));";
     private static final String CREATE_TABLE_HeartRate =
-            "CREATE TABLE HeartRate (RecordTime BIGINT PRIMARY KEY, HeartRate INTEGER);";
+            "CREATE TABLE HeartRate (ID INTEGER PRIMARY KEY AUTOINCREMENT, RecordTime BIGINT, HeartRate INTEGER);";
 
     private static final String DROP_TABLE_StepDistance= "DROP TABLE StepDistance;";
     private static final String DROP_TABLE_LocationRecord = "DROP TABLE LocationRecord;";
@@ -54,5 +54,4 @@ public class SQLiteHelper extends SQLiteOpenHelper{
         sqLiteDatabase.execSQL(DROP_TABLE_HeartRate);
         onCreate(sqLiteDatabase);
     }
-
 }

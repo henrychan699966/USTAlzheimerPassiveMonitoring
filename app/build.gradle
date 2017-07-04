@@ -9,7 +9,7 @@ android {
     compileSdkVersion 25
     buildToolsVersion "25.0.2"
     defaultConfig {
-        applicationId "hk.ust.alzheimerpassivemonitoring"
+        applicationId "hk.ust.aed.alzheimerpassivemonitoring"
         minSdkVersion 21
         targetSdkVersion 22
         versionCode 1

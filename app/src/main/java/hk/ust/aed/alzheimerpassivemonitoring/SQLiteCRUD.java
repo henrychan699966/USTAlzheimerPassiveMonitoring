@@ -3,7 +3,7 @@
  # COMP 4521    #  KO CHING WAI          20199168         cwko@connect.ust.hk
  */
 
-package hk.ust.alzheimerpassivemonitoring;
+package hk.ust.aed.alzheimerpassivemonitoring;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -33,6 +33,8 @@ public class SQLiteCRUD {
         if(db == null) return false;
         return true;
     }
+
+
 
     public void closeDatabase(){
         helper.close();

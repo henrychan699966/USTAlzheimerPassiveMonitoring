@@ -3,7 +3,7 @@
  # COMP 4521    #  KO CHING WAI          20199168         cwko@connect.ust.hk
  */
 
-package hk.ust.alzheimerpassivemonitoring;
+package hk.ust.aed.alzheimerpassivemonitoring;
 
 import android.Manifest;
 import android.app.AlarmManager;

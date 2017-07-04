@@ -1,4 +1,4 @@
-package hk.ust.alzheimerpassivemonitoring;
+package hk.ust.aed.alzheimerpassivemonitoring;
 
 import android.content.Intent;
 import android.content.SharedPreferences;

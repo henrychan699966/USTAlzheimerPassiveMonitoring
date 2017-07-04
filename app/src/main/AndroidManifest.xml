@@ -4,7 +4,7 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="hk.ust.alzheimerpassivemonitoring">
+    package="hk.ust.aed.alzheimerpassivemonitoring">
 
     <uses-permission
         android:name="android.permission.PACKAGE_USAGE_STATS"

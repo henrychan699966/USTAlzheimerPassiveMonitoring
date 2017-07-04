@@ -1,4 +1,4 @@
-package hk.ust.alzheimerpassivemonitoring;
+package hk.ust.aed.alzheimerpassivemonitoring;
 
 /**
  * Created by henry on 2017-06-15.

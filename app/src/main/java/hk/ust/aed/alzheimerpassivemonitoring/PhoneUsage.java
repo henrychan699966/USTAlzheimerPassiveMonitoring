@@ -3,23 +3,23 @@
  # COMP 4521    #  KO CHING WAI          20199168         cwko@connect.ust.hk
  */
 
-package hk.ust.alzheimerpassivemonitoring;
+package hk.ust.aed.alzheimerpassivemonitoring;
 
 import android.os.Parcel;
 import android.os.Parcelable;
 
 public class PhoneUsage {
-    private int eventID;
+    private int ID;
     private String activity;
     private long startTime;
     private long endTime;
 
-    public int getEventID() {
-        return eventID;
+    public int getID() {
+        return ID;
     }
 
-    public void setEventID(int eventID) {
-        this.eventID = eventID;
+    public void setID(int ID) {
+        this.ID = ID;
     }
 
     public String getActivity() {
@@ -46,8 +46,8 @@ public class PhoneUsage {
         this.endTime = endTime;
     }
 
-    public PhoneUsage(int eventID, String activity, long startTime, long endTime) {
-        this.eventID = eventID;
+    public PhoneUsage(int ID, String activity, long startTime, long endTime) {
+        this.ID = ID;
         this.activity = activity;
 
         this.startTime = startTime;

@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="hk.ust.alzheimerpassivemonitoring.PhoneUsageFragment">
+    tools:context="hk.ust.aed.alzheimerpassivemonitoring.PhoneUsageFragment">
 
     <RelativeLayout
         android:layout_width="match_parent"

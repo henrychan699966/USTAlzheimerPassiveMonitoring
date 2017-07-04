@@ -10,7 +10,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:987294845433:android:237c3bd99f3040a9",
         "android_client_info": {
-          "package_name": "hk.ust.alzheimerpassivemonitoring"
+          "package_name": "hk.ust.aed.alzheimerpassivemonitoring"
         }
       },
       "oauth_client": [
@@ -18,7 +18,7 @@
           "client_id": "987294845433-9ssih7f4t5ilfk9cd5nava2bp1k9m49m.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "hk.ust.alzheimerpassivemonitoring",
+            "package_name": "hk.ust.aed.alzheimerpassivemonitoring",
             "certificate_hash": "fdd11d210776a4b84559ab6678ce9f680dcde423"
           }
         },
