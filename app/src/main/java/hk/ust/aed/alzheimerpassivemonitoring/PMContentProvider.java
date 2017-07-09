@@ -19,11 +19,11 @@ public class PMContentProvider extends ContentProvider {
     private static final UriMatcher sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
     static {
-        sUriMatcher.addURI("hk.ust.aed.alzheimerpassivemonitoring.PMContentProvider","PhoneUsage",1);
-        sUriMatcher.addURI("hk.ust.aed.alzheimerpassivemonitoring.PMContentProvider","LocationRecord",2);
-        sUriMatcher.addURI("hk.ust.aed.alzheimerpassivemonitoring.PMContentProvider","StepDistance",3);
-        sUriMatcher.addURI("hk.ust.aed.alzheimerpassivemonitoring.PMContentProvider","SleepWakeCycle",4);
-        sUriMatcher.addURI("hk.ust.aed.alzheimerpassivemonitoring.PMContentProvider","HeartRate",5);
+        sUriMatcher.addURI("hk.ust.aed.alzheimerpassivemonitoring.provider","PhoneUsage",1);
+        sUriMatcher.addURI("hk.ust.aed.alzheimerpassivemonitoring.provider","LocationRecord",2);
+        sUriMatcher.addURI("hk.ust.aed.alzheimerpassivemonitoring.provider","StepDistance",3);
+        sUriMatcher.addURI("hk.ust.aed.alzheimerpassivemonitoring.provider","SleepWakeCycle",4);
+        sUriMatcher.addURI("hk.ust.aed.alzheimerpassivemonitoring.provider","HeartRate",5);
     }
 
     SQLiteHelper databaseHelper;
