@@ -19,7 +19,6 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
-    <permission android:name="hk.ust.aed.alzheimerpassivemonitoring.ContentProvider_Permission" android:protectionLevel="normal" />
 
     <application
         android:allowBackup="true"
@@ -55,7 +54,7 @@
             android:theme="@style/AppTheme.NoActionBar"></activity>
         
         <provider
-            android:authorities="hk.ust.aed.alzheimerpassivemonitoring.provider"
+            android:authorities="hk.ust.aed.alzheimerpassivemonitoring.PMContentProvider"
             android:name="hk.ust.aed.alzheimerpassivemonitoring.PMContentProvider"
             android:exported="true"/>
     </application>

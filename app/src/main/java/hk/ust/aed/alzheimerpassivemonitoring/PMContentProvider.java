@@ -19,11 +19,11 @@ public class PMContentProvider extends ContentProvider {
     private static final UriMatcher sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
     static {
-        sUriMatcher.addURI("hk.ust.aed.alzheimerpassivemonitoring.provider","PhoneUsage",1);
-        sUriMatcher.addURI("hk.ust.aed.alzheimerpassivemonitoring.provider","LocationRecord",2);
-        sUriMatcher.addURI("hk.ust.aed.alzheimerpassivemonitoring.provider","StepDistance",3);
-        sUriMatcher.addURI("hk.ust.aed.alzheimerpassivemonitoring.provider","SleepWakeCycle",4);
-        sUriMatcher.addURI("hk.ust.aed.alzheimerpassivemonitoring.provider","HeartRate",5);
+        sUriMatcher.addURI("hk.ust.aed.alzheimerpassivemonitoring.PMContentProvider","PhoneUsage",1);
+        sUriMatcher.addURI("hk.ust.aed.alzheimerpassivemonitoring.PMContentProvider","LocationRecord",2);
+        sUriMatcher.addURI("hk.ust.aed.alzheimerpassivemonitoring.PMContentProvider","StepDistance",3);
+        sUriMatcher.addURI("hk.ust.aed.alzheimerpassivemonitoring.PMContentProvider","SleepWakeCycle",4);
+        sUriMatcher.addURI("hk.ust.aed.alzheimerpassivemonitoring.PMContentProvider","HeartRate",5);
     }
 
     SQLiteHelper databaseHelper;
@@ -41,25 +41,26 @@ public class PMContentProvider extends ContentProvider {
         Cursor mCursor = null;
         switch(sUriMatcher.match(uri)){
             case 1:
-                database.query("PhoneUsage", null, selection, selectionArgs, null, null, null);
+                Log.e("PROVIDER","Match PhoneUsage URI");
+                mCursor = database.query("PhoneUsage", null, selection,selectionArgs, null, null, null);
                 break;
             case 2:
-                database.query("LocationRecord", null, selection, selectionArgs, null, null, null);
+                mCursor = database.query("LocationRecord", null, selection, selectionArgs, null, null, null);
                 break;
             case 3:
-                database.query("StepDistance", null, selection, selectionArgs, null, null, null);
+                mCursor = database.query("StepDistance", null, selection, selectionArgs, null, null, null);
                 break;
             case 4:
-                database.query("SleepWakeCycle", null, selection, selectionArgs, null, null, null);
+                mCursor = database.query("SleepWakeCycle", null, selection, selectionArgs, null, null, null);
                 break;
             case 5:
-                database.query("HeartRate", null, selection, selectionArgs, null, null, null);
+                mCursor = database.query("HeartRate", null, selection, selectionArgs, null, null, null);
                 break;
             default:
                 Log.e("SQLite_Query","Unknown Uri");
                 throw new IllegalArgumentException("Unknown Uri: " + uri);
         }
-        return null;
+        return mCursor;
     }
 
     @Nullable
