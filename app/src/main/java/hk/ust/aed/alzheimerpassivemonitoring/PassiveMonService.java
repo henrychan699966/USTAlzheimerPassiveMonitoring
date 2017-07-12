@@ -54,7 +54,9 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -79,6 +81,9 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
     private static final int DAILY_TASK_INTERVAL = 180; //seconds
     private static final String LAST_DAILY_TASK_TIME = "LastDailyTaskTime"; // Last time to do daily task
     private static final String LAST_LOCATION_TIME = "LastLocationTime";
+
+    private static final String LAST_STEP_DISTANCE = "LastStepDistanceRetrieved";
+    private static final String LAST_SLEEP = "LastSleepWakeCycleRetrieved";
 
     private Notification notification;
     private int ONGOING_NOTIFICATION_ID;
@@ -389,10 +394,34 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
         if(!existSharedPref("fitbitToken")) return;
         String token = readSharedPref("fitbitToken");
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        Calendar calendar = GregorianCalendar.getInstance();
+        calendar.setTime(new Date(System.currentTimeMillis()));
+        calendar.add(Calendar.DATE,-1);      //Yesterday
 
-        String date2 = "2017-07-11";
+        if(existSharedPref(LAST_STEP_DISTANCE)){
+            Date lastRetrieved = null;
+            try {
+                lastRetrieved = dateFormat.parse(readSharedPref(LAST_STEP_DISTANCE));
+            } catch (ParseException e) {
+                e.printStackTrace();
+                return;
+            }
 
-        new FitbitStepDistance(this).execute(date2,token);
+
+            if(!dateFormat.format(calendar.getTime()).equals(dateFormat.format(lastRetrieved))){
+                new FitbitStepDistance(this).execute(dateFormat.format(calendar.getTime()),token);
+                writeSharedPref(LAST_STEP_DISTANCE,dateFormat.format(calendar.getTime()));
+            }
+            else{
+                Log.i("StepDistance","Repeated");
+                return;
+            }
+
+        }else{
+            //First time of running this Service
+            new FitbitStepDistance(this).execute(dateFormat.format(calendar.getTime()),token);
+            writeSharedPref(LAST_STEP_DISTANCE,dateFormat.format(calendar.getTime()));
+        }
     }
 
     private class FitbitStepDistance extends AsyncTask<String,Void,StepDistance> {
@@ -462,10 +491,34 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
         if(!existSharedPref("fitbitToken")) return;
         String token = readSharedPref("fitbitToken");
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        //String date = dateFormat.format(new Date());
-        String date = "2017-07-11";
+        Calendar calendar = GregorianCalendar.getInstance();
+        calendar.setTime(new Date(System.currentTimeMillis()));
+        calendar.add(Calendar.DATE,-1);      //Yesterday
 
-        new FitbitSleepWakeCycle(this).execute(date,token);
+        if(existSharedPref(LAST_SLEEP)){
+            Date lastRetrieved = null;
+            try {
+                lastRetrieved = dateFormat.parse(readSharedPref(LAST_SLEEP));
+            } catch (ParseException e) {
+                e.printStackTrace();
+                return;
+            }
+
+            if(!dateFormat.format(calendar.getTime()).equals(dateFormat.format(lastRetrieved))){
+                new FitbitSleepWakeCycle(this).execute(dateFormat.format(calendar.getTime()),token);
+                writeSharedPref(LAST_SLEEP,dateFormat.format(calendar.getTime()));
+            }
+            else{
+                Log.i("Sleep","Repeated");
+                return;
+            }
+
+        }else{
+            //First time of running this Service
+            new FitbitSleepWakeCycle(this).execute(dateFormat.format(calendar.getTime()),token);
+            writeSharedPref(LAST_SLEEP,dateFormat.format(calendar.getTime()));
+            Log.i("Sleep","No Share Pref");
+        }
     }
 
     private class FitbitSleepWakeCycle extends AsyncTask<String,Void,List<SleepWakeCycle>> {
