@@ -75,6 +75,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Button loginButton = (Button) findViewById(R.id.loginButton);
         loginButton.setOnClickListener(this);
 
+        //Testing for Fitbit
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        if(sharedPreferences.contains("fitbitToken")){
+            Log.i("fitbitToken",sharedPreferences.getString("fitbitToken",""));
+        }
+
     }
 
 

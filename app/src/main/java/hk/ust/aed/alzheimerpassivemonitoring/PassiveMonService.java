@@ -75,9 +75,9 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
     private boolean intentToGetLocation;
     private boolean intentToDoDailyTask;
 
-    private static final int LOCATION_RETRIEVE_INTERVAL = 1800; //seconds
-    private static final int DAILY_TASK_INTERVAL = 3600; //seconds
-    private static final String LAST_UPLOAD_TIME = "LastUploadTime";
+    private static final int LOCATION_RETRIEVE_INTERVAL = 120; //seconds
+    private static final int DAILY_TASK_INTERVAL = 180; //seconds
+    private static final String LAST_DAILY_TASK_TIME = "LastDailyTaskTime"; // Last time to do daily task
     private static final String LAST_LOCATION_TIME = "LastLocationTime";
 
     private Notification notification;
@@ -150,11 +150,11 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
     }
 
     private void scheduler(){
-        if(!existSharedPref(LAST_UPLOAD_TIME)){
+        if(!existSharedPref(LAST_DAILY_TASK_TIME)){
             intentToDoDailyTask = true;
             return;
         }
-        if(System.currentTimeMillis() - Long.parseLong(readSharedPref(LAST_UPLOAD_TIME)) > DAILY_TASK_INTERVAL){
+        if(System.currentTimeMillis() - Long.parseLong(readSharedPref(LAST_DAILY_TASK_TIME)) > DAILY_TASK_INTERVAL){
             intentToDoDailyTask= true;
         }
         else{
@@ -203,10 +203,7 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
         getStepDistance();
         getSleepWakeCycle();
 
-
-
-        new UploadFirebase().execute(extractDailyData(context));
-
+        writeSharedPref(LAST_DAILY_TASK_TIME,Long.toString(System.currentTimeMillis()));
     }
 
     //get app usage from s seconds ago to now
@@ -263,53 +260,6 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
         am.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + s * 1000, alarmIntent);
     }
 
-    private Map<String,String> extractDailyData(Context context) {
-        String[] s = new String[5];
-        String[] tableName = {"PhoneUsage","StepDistance","LocationRecord","SleepWakeCycle","HeartRate"};
-
-        SQLiteCRUD database = new SQLiteCRUD(context);
-        database.openDatabase();
-
-        Type type = new TypeToken<List<PhoneUsage>>() {
-        }.getType();
-        s[0] = new Gson().toJson(database.readAllPhoneUsage(0), type);
-
-        type = new TypeToken<List<StepDistance>>() {
-        }.getType();
-        s[1] = new Gson().toJson(database.readAllStepDistance(0), type);
-
-        type = new TypeToken<List<LocationRecord>>() {
-        }.getType();
-        s[2] = new Gson().toJson(database.readAllLocationRecord(0), type);
-
-        type = new TypeToken<List<SleepWakeCycle>>() {
-        }.getType();
-        s[3] = new Gson().toJson(database.readAllSleepWakeCycle(0), type);
-
-        type = new TypeToken<List<HeartRate>>() {
-        }.getType();
-        s[4] = new Gson().toJson(database.readAllHeartRate(0), type);
-        database.closeDatabase();
-
-        JsonParser jsonParser = new JsonParser();
-        Map<String,String> data = new HashMap<>();
-
-        for (int i = 0; i < s.length;i++){
-            JsonArray jsonArray = null;
-            try{
-                jsonArray = (JsonArray) jsonParser.parse(s[i]);
-            }
-            catch(RuntimeException e){
-                jsonArray = new JsonArray();
-            }
-            for(JsonElement jsonElement : jsonArray){
-                jsonElement.getAsJsonObject().addProperty("UserID","123456789");
-            }
-             data.put(tableName[i],new Gson().toJson(jsonArray));
-        }
-
-        return data;
-    }
 
     //get call log s seconds before current time
     private List<PhoneUsage> getCallHistory(int s) {
@@ -439,12 +389,9 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
         if(!existSharedPref("fitbitToken")) return;
         String token = readSharedPref("fitbitToken");
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        //String date = dateFormat.format(new Date());
-       // String date = "2017-05-15";
-        String date2 = "2017-05-16";
 
-//        new FitbitStepDistance(this).execute(date,token);
-     //   try{Thread.sleep(5000);}catch (Exception e){}
+        String date2 = "2017-07-11";
+
         new FitbitStepDistance(this).execute(date2,token);
     }
 
@@ -516,7 +463,7 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
         String token = readSharedPref("fitbitToken");
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         //String date = dateFormat.format(new Date());
-        String date = "2017-05-15";
+        String date = "2017-07-11";
 
         new FitbitSleepWakeCycle(this).execute(date,token);
     }
@@ -530,6 +477,8 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
 
         @Override
         protected List<SleepWakeCycle> doInBackground(String... strings) {
+            List<SleepWakeCycle> sleepWakeCycles = new ArrayList<>();
+            DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
 
             OkHttpClient client = new OkHttpClient();
 
@@ -555,23 +504,18 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
                 jo = new JsonObject();
             }
 
-            List<SleepWakeCycle> sleepWakeCycles = new ArrayList<>();
-            DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
-
-
-            for(JsonElement je :jo.getAsJsonArray("sleep")){
-                for(JsonElement je2 : je.getAsJsonObject().getAsJsonObject("levels").getAsJsonArray("data")){
+            for(JsonElement je :jo.getAsJsonArray("sleep")) {
+                for (JsonElement je2 : je.getAsJsonObject().getAsJsonObject("levels").getAsJsonArray("data")) {
                     long date = 0;
-                    try{
-                        date = df.parse(je2.getAsJsonObject().getAsJsonObject("datetime").getAsString()).getTime();
+                    try {
+                        date = df.parse(je2.getAsJsonObject().getAsJsonPrimitive("dateTime").getAsString()).getTime();
+                        Log.e("Sleep",Long.toString(date));
+                    } catch (ParseException e) {
+                        Log.e("FitbitSleepWakeCycle", "Parse Data fail");
                     }
-                    catch(ParseException e){
-
-                    }
-                    sleepWakeCycles.add(new SleepWakeCycle(date,date + je2.getAsJsonObject().getAsJsonObject("seconds").getAsInt(), je2.getAsJsonObject().getAsJsonObject("level").getAsString()));
+                    sleepWakeCycles.add(new SleepWakeCycle(date, date + je2.getAsJsonObject().getAsJsonPrimitive("seconds").getAsInt()*1000, je2.getAsJsonObject().getAsJsonPrimitive("level").getAsString()));
                 }
             }
-
             return sleepWakeCycles;
         }
 
@@ -589,32 +533,6 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
         }
     }
 
-    private class UploadFirebase extends AsyncTask<Map<String, String>,Void,Void>{
-        public final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-
-        @Override
-        protected Void doInBackground(Map<String,String>... data) {
-
-            OkHttpClient client = new OkHttpClient();
-
-            for(Map.Entry<String,String> entry : data[0].entrySet()){
-                RequestBody body = RequestBody.create(JSON, entry.getValue());
-                Request request = new Request.Builder()
-                        .url("https://ad-passive.firebaseio.com/data/" + entry.getKey() + ".json")
-                        .post(body)
-                        .build();
-                try{
-                    client.newCall(request).execute();
-                }
-                catch (IOException e){
-
-                }
-            }
-
-
-            return null;
-        }
-    }
 
     public long dateToEpoch(String date){
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");

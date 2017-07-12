@@ -65,6 +65,7 @@ public class LoginFitbitActivity extends AppCompatActivity {
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
                 super.onPageStarted(view, url, favicon);
                 if(url.startsWith(OAUTH2_CALLBACK_URL)){
+                    Log.i("CallBack",url);
                     String[] data;
                     HttpUrl callbackURL = HttpUrl.parse(url);
 
