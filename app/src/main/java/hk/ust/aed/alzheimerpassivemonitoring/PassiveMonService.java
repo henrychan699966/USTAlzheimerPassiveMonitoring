@@ -48,9 +48,11 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
@@ -81,8 +83,8 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
     private boolean intentToGetLocation;
     private boolean intentToDoDailyTask;
 
-    private static final int LOCATION_RETRIEVE_INTERVAL = 120; //seconds
-    private static final int DAILY_TASK_INTERVAL = 180; //seconds
+    private static final int LOCATION_RETRIEVE_INTERVAL = 60; //seconds
+    private static final int DAILY_TASK_INTERVAL = 120; //seconds
     private static final String LAST_DAILY_TASK_TIME = "LastDailyTaskTime"; // Last time to do daily task
     private static final String LAST_LOCATION_TIME = "LastLocationTime";
 
@@ -629,9 +631,9 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
         for(int i = 0;i < tables.length;i++){
             cursors[i] = database.query(tables[i],null,"ID > " + Integer.toString(idStartFrom[i]), null, null, null, "ID ASC");
 
+            Log.e("TestJson",i + " " +  Boolean.toString(cursors[i] == null)+ " " );
             if(cursors[i] == null) continue;
             if(cursors[i].getCount() <= 0) continue;
-
             cursors[i].moveToFirst();
         }
 
@@ -696,9 +698,11 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
         }
 
         for(int i = 0; i < cursors.length;i++){
-            cursors[i].moveToLast();
-            writeSharedPref(tables[i],Integer.toString(cursors[i].getInt(cursors[i].getColumnIndex("ID")) +1));
-            cursors[i].close();
+            if(cursors[i].getCount()>0){
+                cursors[i].moveToLast();
+                writeSharedPref(tables[i],Integer.toString(cursors[i].getInt(cursors[i].getColumnIndex("ID")) +1));
+                cursors[i].close();
+            }
         }
 
 
@@ -734,15 +738,27 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
             jsonObject.add(tables[i],jsonArray);
         }
 
+        Log.e("TestJson",new Gson().toJson(jsonObject));
 
-        OutputStream outputStream;
         DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+
         try {
-            outputStream = openFileOutput(dateFormat.format(new Date()), Context.MODE_PRIVATE);
-            outputStream.write(new Gson().toJson(jsonObject).getBytes());
-            outputStream.close();
-        } catch (Exception e) {
+            File filesDir = getFilesDir();
+            File outFile = new File(filesDir, dateFormat.format(new Date(System.currentTimeMillis())) + ".json");
+
+            OutputStream os = new FileOutputStream(outFile.getAbsolutePath());
+
+            os.write(new Gson().toJson(jsonObject).toString().getBytes());
+            os.flush();
+            os.close();
+        } catch (IOException e) {
             e.printStackTrace();
         }
+
+        File filesDir = getFilesDir();
+        File outFile = new File(filesDir, dateFormat.format(new Date(System.currentTimeMillis())) + ".json");
+
+        Log.e("TestJson",Long.toString(outFile.length()));
+        database.close();
     }
 }

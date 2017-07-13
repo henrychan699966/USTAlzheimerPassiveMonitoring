@@ -58,6 +58,7 @@ public class PMContentProvider extends ContentProvider {
     @Nullable
     @Override
     public ParcelFileDescriptor openFile(@NonNull Uri uri, @NonNull String mode) throws FileNotFoundException {
+        Log.e("TestJson","CP of PM");
         String fileName = uri.getLastPathSegment();
         File FilesDir = getContext().getFilesDir();
         File data = new File(FilesDir, fileName+".json");
