@@ -6,10 +6,17 @@
 package hk.ust.aed.alzheimerpassivemonitoring;
 
 public class StepDistance {
+    private int ID;
     private long date;
     private int step;
     private float distance;
 
+    public StepDistance(int ID, long date, int step, float distance) {
+        this.ID = ID;
+        this.date = date;
+        this.step = step;
+        this.distance = distance;
+    }
 
     public StepDistance(long date, int step, float distance) {
         this.date = date;
@@ -39,5 +46,13 @@ public class StepDistance {
 
     public void setDistance(float distance) {
         this.distance = distance;
+    }
+
+    public int getID() {
+        return ID;
+    }
+
+    public void setID(int ID) {
+        this.ID = ID;
     }
 }

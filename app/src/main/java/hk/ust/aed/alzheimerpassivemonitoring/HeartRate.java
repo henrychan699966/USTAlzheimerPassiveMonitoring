@@ -5,6 +5,14 @@ package hk.ust.aed.alzheimerpassivemonitoring;
  */
 
 public class HeartRate {
+    private int ID;
+
+    public HeartRate(int ID, long recordTime, int heartRate) {
+        this.ID = ID;
+        this.recordTime = recordTime;
+        this.heartRate = heartRate;
+    }
+
     private long recordTime;
     private int heartRate;
 
@@ -27,5 +35,13 @@ public class HeartRate {
 
     public void setHeartRate(int heartRate) {
         this.heartRate = heartRate;
+    }
+
+    public int getID() {
+        return ID;
+    }
+
+    public void setID(int ID) {
+        this.ID = ID;
     }
 }

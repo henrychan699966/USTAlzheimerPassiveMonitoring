@@ -6,6 +6,24 @@
 package hk.ust.aed.alzheimerpassivemonitoring;
 
 public class LocationRecord {
+    private int ID;
+
+    public LocationRecord(int ID, long recordTime, float latitude, float longitude) {
+        this.ID = ID;
+        RecordTime = recordTime;
+        Latitude = latitude;
+        Longitude = longitude;
+    }
+
+    public int getID() {
+
+        return ID;
+    }
+
+    public void setID(int ID) {
+        this.ID = ID;
+    }
+
     private long RecordTime;
     private float Latitude;
     private float Longitude;

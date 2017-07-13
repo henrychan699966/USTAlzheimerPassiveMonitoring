@@ -6,12 +6,20 @@
 package hk.ust.aed.alzheimerpassivemonitoring;
 
 public class SleepWakeCycle {
+    private int ID;
     private long startTime;
     private long endTime;
     private String sleepStage;
 
 
     public SleepWakeCycle(long startTime, long endTime, String sleepStage) {
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.sleepStage = sleepStage;
+    }
+
+    public SleepWakeCycle(int ID, long startTime, long endTime, String sleepStage) {
+        this.ID = ID;
         this.startTime = startTime;
         this.endTime = endTime;
         this.sleepStage = sleepStage;
@@ -39,5 +47,13 @@ public class SleepWakeCycle {
 
     public void setSleepStage(String sleepStage) {
         this.sleepStage = sleepStage;
+    }
+
+    public int getID() {
+        return ID;
+    }
+
+    public void setID(int ID) {
+        this.ID = ID;
     }
 }

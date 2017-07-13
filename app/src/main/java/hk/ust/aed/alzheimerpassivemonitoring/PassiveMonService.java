@@ -18,6 +18,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -25,6 +26,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.provider.CallLog;
+import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 
@@ -49,6 +51,8 @@ import com.google.gson.reflect.TypeToken;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -207,6 +211,8 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
 
         getStepDistance();
         getSleepWakeCycle();
+
+        extractDataToJson();
 
         writeSharedPref(LAST_DAILY_TASK_TIME,Long.toString(System.currentTimeMillis()));
     }
@@ -597,5 +603,146 @@ public class PassiveMonService extends Service implements GoogleApiClient.Connec
         }
 
         return d.getTime();
+    }
+
+    //read ID from sharedPreference and extract data after this ID
+    private void extractDataToJson(){
+        String[] tables = {"PhoneUsage","StepDistance","LocationRecord","SleepWakeCycle","HeartRate"};
+        int[] idStartFrom = {1,1,1,1,1}; // default starting point of extraction of each table
+
+        SQLiteHelper dbHelper = new SQLiteHelper(context);
+        SQLiteDatabase database = dbHelper.getReadableDatabase();
+        Cursor[] cursors = new Cursor[tables.length];
+
+        List<PhoneUsage> phoneUsages = new ArrayList<>();
+        List<StepDistance> stepDistances = new ArrayList<>();
+        List<LocationRecord> locationRecords = new ArrayList<>();
+        List<SleepWakeCycle> sleepWakeCycles = new ArrayList<>();
+        List<HeartRate> heartRates = new ArrayList<>();
+
+        for(int i = 0;i < tables.length;i++){
+            if(existSharedPref(tables[i])){
+                idStartFrom[i] = Integer.parseInt(readSharedPref(tables[i]));
+            }
+        }
+
+        for(int i = 0;i < tables.length;i++){
+            cursors[i] = database.query(tables[i],null,"ID > " + Integer.toString(idStartFrom[i]), null, null, null, "ID ASC");
+
+            if(cursors[i] == null) continue;
+            if(cursors[i].getCount() <= 0) continue;
+
+            cursors[i].moveToFirst();
+        }
+
+        if(cursors[0].getCount() > 0){
+            while (!cursors[0].isAfterLast()) {
+                PhoneUsage pu = new PhoneUsage(
+                        cursors[0].getInt(cursors[0].getColumnIndex("ID")),
+                        cursors[0].getString(cursors[0].getColumnIndex("Activity")),
+                        cursors[0].getLong(cursors[0].getColumnIndex("StartTime")),
+                        cursors[0].getLong(cursors[0].getColumnIndex("EndTime")));
+                phoneUsages.add(pu);
+                cursors[0].moveToNext();
+            }
+        }
+
+        if(cursors[1].getCount() > 0){
+            while (!cursors[1].isAfterLast()) {
+                StepDistance sd = new StepDistance(
+                        cursors[1].getInt(cursors[1].getColumnIndex("ID")),
+                        cursors[1].getLong(cursors[1].getColumnIndex("Date")),
+                        cursors[1].getInt(cursors[1].getColumnIndex("Step")),
+                        cursors[1].getFloat(cursors[1].getColumnIndex("Distance")));
+                stepDistances.add(sd);
+                cursors[1].moveToNext();
+            }
+        }
+
+        if(cursors[2].getCount() > 0){
+            while (!cursors[2].isAfterLast()) {
+                LocationRecord lr = new LocationRecord(
+                        cursors[2].getInt(cursors[2].getColumnIndex("ID")),
+                        cursors[2].getLong(cursors[2].getColumnIndex("RecordTime")),
+                        cursors[2].getFloat(cursors[2].getColumnIndex("Latitude")),
+                        cursors[2].getFloat(cursors[2].getColumnIndex("Longitude")));
+                locationRecords.add(lr);
+                cursors[2].moveToNext();
+            }
+        }
+
+        if(cursors[3].getCount() > 0){
+            while (!cursors[3].isAfterLast()) {
+                SleepWakeCycle swc = new SleepWakeCycle(
+                        cursors[3].getInt(cursors[3].getColumnIndex("ID")),
+                        cursors[3].getLong(cursors[3].getColumnIndex("StartTime")),
+                        cursors[3].getLong(cursors[3].getColumnIndex("EndTime")),
+                        cursors[3].getString(cursors[3].getColumnIndex("SleepStage")));
+                sleepWakeCycles.add(swc);
+                cursors[3].moveToNext();
+            }
+        }
+
+
+        if(cursors[4].getCount() > 0){
+            while (!cursors[4].isAfterLast()) {
+                HeartRate hr = new HeartRate(
+                        cursors[4].getInt(cursors[4].getColumnIndex("ID")),
+                        cursors[4].getLong(cursors[4].getColumnIndex("RecordTime")),
+                        cursors[4].getInt(cursors[4].getColumnIndex("HeartRate")));
+                heartRates.add(hr);
+                cursors[4].moveToNext();
+            }
+        }
+
+        for(int i = 0; i < cursors.length;i++){
+            cursors[i].moveToLast();
+            writeSharedPref(tables[i],Integer.toString(cursors[i].getInt(cursors[i].getColumnIndex("ID")) +1));
+            cursors[i].close();
+        }
+
+
+        String[] data = new String[tables.length];
+        Type type;
+
+        type= new TypeToken<List<PhoneUsage>>() {}.getType();
+        data[0] = new Gson().toJson(phoneUsages, type);
+
+        type = new TypeToken<List<StepDistance>>() {}.getType();
+        data[1] = new Gson().toJson(stepDistances, type);
+
+        type = new TypeToken<List<LocationRecord>>() {}.getType();
+        data[2] = new Gson().toJson(locationRecords, type);
+
+        type = new TypeToken<List<SleepWakeCycle>>() {}.getType();
+        data[3] = new Gson().toJson(sleepWakeCycles, type);
+
+        type = new TypeToken<List<HeartRate>>() {}.getType();
+        data[4] = new Gson().toJson(heartRates, type);
+
+        JsonParser jsonParser = new JsonParser();
+        JsonObject jsonObject = new JsonObject();
+
+        for (int i = 0; i < data.length;i++){
+            JsonArray jsonArray = null;
+            try{
+                jsonArray = (JsonArray) jsonParser.parse(data[i]);
+            }
+            catch(RuntimeException e){
+                jsonArray = new JsonArray();
+            }
+            jsonObject.add(tables[i],jsonArray);
+        }
+
+
+        OutputStream outputStream;
+        DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+        try {
+            outputStream = openFileOutput(dateFormat.format(new Date()), Context.MODE_PRIVATE);
+            outputStream.write(new Gson().toJson(jsonObject).getBytes());
+            outputStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
